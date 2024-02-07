@@ -1,4 +1,6 @@
 {
+  "files": ["types.d.ts"],
+  "include": ["src"],
   "compilerOptions": {
     "target": "es2016",
     "module": "CommonJS",
