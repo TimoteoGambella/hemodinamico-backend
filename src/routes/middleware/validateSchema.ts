@@ -10,7 +10,7 @@ export default function validateSchema(modelClass: new (...args: any[]) => Docum
       const isValid = instance.validateSync()
       if (isValid) {
         res.status(400).json({
-          message: 'Invalid user',
+          message: 'Estructura de datos de usuario inválida.',
           error: isValid.errors,
         })
         return

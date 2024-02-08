@@ -8,7 +8,7 @@ export default {
       const { username, password } = req.body
       const handleInvalid = (status: number) =>
         res.status(status).json({
-          message: 'Invalid email or password',
+          message: 'El usuario o la contraseña son inválidos.',
         })
   
       if (username && password) {
@@ -19,7 +19,7 @@ export default {
         }
         req.session!.user = user._id
         res.json({
-          message: 'Login successful',
+          message: 'Inicio de sesión exitoso.',
           user,
         })
       } else {
@@ -37,7 +37,7 @@ export default {
     try {
       const createdUser = await new UserDAO().create(user)
       res.status(201).json({
-        message: 'User created successfully',
+        message: 'Usuario creado exitosamente.',
         user: createdUser,
       })
     } catch (error) {
@@ -50,7 +50,7 @@ export default {
   logout: (req: Request, res: Response) => {
     req.session = null
     res.json({
-      message: 'Logout successful',
+      message: 'Cierre de sesión exitoso.',
     })
   }
 }
