@@ -16,7 +16,7 @@ export default class UserDAO {
   async getAll() {
     try {
       this.MONGODB(this.URL)
-      const users = await UserModel.find()
+      const users = await UserModel.find().select('-password -__v')
       return users
     } catch (error) {
       console.error(error)
@@ -27,7 +27,7 @@ export default class UserDAO {
   async getByUsername(username: string) {
     try {
       this.MONGODB(this.URL)
-      const user = await UserModel.findOne({ username })
+      const user = await UserModel.findOne({ username }).select('-password -__v')
       return user
     } catch (error) {
       console.error(error)

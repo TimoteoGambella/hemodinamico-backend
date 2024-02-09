@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import UserDAO from '../../db/dao/User.dao'
-import comparePassword from '../util/comparePassword'
+import UserDAO from '../../../db/dao/User.dao'
+import comparePassword from '../../util/comparePassword'
 
 export default {
   login: async (req: Request, res: Response) => {
@@ -10,14 +10,14 @@ export default {
         res.status(status).json({
           message: 'El usuario o la contraseña son inválidos.',
         })
-  
+
       if (username && password) {
         const user = await new UserDAO().getByUsername(username)
         if (!user || !comparePassword(password, user.password)) {
           handleInvalid(401)
           return
         }
-        req.session!.user = user._id
+        req.session!.user = { _id: user._id, isAdmin: user.isAdmin }
         res.json({
           message: 'Inicio de sesión exitoso.',
           user,
@@ -52,5 +52,12 @@ export default {
     res.json({
       message: 'Cierre de sesión exitoso.',
     })
-  }
+  },
+  session: (req: Request, res: Response) => {
+    if (req.session && req.session.user) {
+      res.status(200).end()
+    } else {
+      res.status(401).end()
+    }
+  },
 }
