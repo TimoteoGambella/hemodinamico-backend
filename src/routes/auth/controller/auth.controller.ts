@@ -18,9 +18,11 @@ export default {
           return
         }
         req.session!.user = { _id: user._id, isAdmin: user.isAdmin }
+        const tmp = JSON.parse(JSON.stringify(user))
+        delete tmp.password
         res.json({
           message: 'Inicio de sesión exitoso.',
-          user,
+          user: tmp,
         })
       } else {
         handleInvalid(400)

@@ -27,7 +27,7 @@ export default class UserDAO {
   async getByUsername(username: string) {
     try {
       this.MONGODB(this.URL)
-      const user = await UserModel.findOne({ username }).select('-password -__v')
+      const user = await UserModel.findOne({ username }).select('-__v')
       return user
     } catch (error) {
       console.error(error)
