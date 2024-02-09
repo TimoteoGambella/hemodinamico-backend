@@ -1,9 +1,9 @@
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import UserDAO from '../../../db/dao/User.dao'
 import comparePassword from '../../util/comparePassword'
 
 export default {
-  login: async (req: Request, res: Response) => {
+  login: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { username, password } = req.body
       const handleInvalid = (status: number) =>
@@ -26,13 +26,10 @@ export default {
         handleInvalid(400)
       }
     } catch (error) {
-      console.error(error)
-      res.status(500).json({
-        message: 'Server error',
-      })
+      next(error)
     }
   },
-  register: async (req: Request, res: Response) => {
+  register: async (req: Request, res: Response, next: NextFunction) => {
     const user = req.body
     try {
       const createdUser = await new UserDAO().create(user)
@@ -41,23 +38,28 @@ export default {
         user: createdUser,
       })
     } catch (error) {
-      console.error(error)
-      res.status(500).json({
-        message: 'Server error',
+      next(error)
+    }
+  },
+  logout: (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.session = null
+      res.json({
+        message: 'Cierre de sesión exitoso.',
       })
+    } catch (error) {
+      next(error)
     }
   },
-  logout: (req: Request, res: Response) => {
-    req.session = null
-    res.json({
-      message: 'Cierre de sesión exitoso.',
-    })
-  },
-  session: (req: Request, res: Response) => {
-    if (req.session && req.session.user) {
-      res.status(200).end()
-    } else {
-      res.status(401).end()
+  session: (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (req.session && req.session.user) {
+        res.status(200).end()
+      } else {
+        res.status(401).end()
+      }
+    } catch (error) {
+      next(error)
     }
-  },
+  }
 }
