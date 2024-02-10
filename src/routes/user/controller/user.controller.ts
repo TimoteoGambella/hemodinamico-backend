@@ -10,4 +10,16 @@ export default {
       next(error)
     }
   },
+  register: async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.body
+    try {
+      const createdUser = await new UserDAO().create(user)
+      res.status(201).json({
+        message: 'Usuario creado exitosamente.',
+        user: createdUser,
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
 }
