@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import UserDAO from '../../../db/dao/User.dao'
 
 export default {
-  getAllUsers: async (_req: Request, res: Response, next: NextFunction) => {
+  getAll: async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const users = await new UserDAO().getAll()
       if (!users) throw new Error('Error al obtener usuarios.')
@@ -18,7 +18,7 @@ export default {
       if(!createdUser) throw new Error('Error al crear usuario.')
       res.status(201).json({
         message: 'Usuario creado exitosamente.',
-        user: createdUser,
+        data: createdUser,
       })
     } catch (error) {
       next(error)

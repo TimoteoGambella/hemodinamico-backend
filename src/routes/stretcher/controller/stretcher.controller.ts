@@ -1,0 +1,46 @@
+import { Request, Response, NextFunction } from 'express'
+import StretcherDAO from '../../../db/dao/Stretcher.dao'
+
+
+export default {
+  getAll: async (_req: Request, res: Response, next: NextFunction) => {
+    const { populate } = _req.query
+    try {
+      const stretcher = await new StretcherDAO().getAll(!!populate)
+      if (!stretcher) throw new Error('Error al obtener las camillas.')
+      res.status(200).json({ message: 'Get all stretcher', data: stretcher })
+    } catch (error) {
+      next(error)
+    }
+  },
+  register: async (req: Request, res: Response, next: NextFunction) => {
+    const stretcher: Stretcher = req.body
+    try {
+      const createdStretcher = await new StretcherDAO().create(stretcher)
+      if (!createdStretcher) throw new Error('Error al crear la camilla.')
+      res.status(201).json({
+        message: 'Camilla creada exitosamente.',
+        data: createdStretcher,
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
+  delete: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.query
+    try {
+      if (!id) {
+        res.status(400).json({ message: 'ID no proporcionado.' })
+        return
+      }
+      const deletedPatient = await new StretcherDAO().delete(String(id))
+      if (!deletedPatient) throw new Error('Error al eliminar la camilla.')
+      res.status(200).json({
+        message: 'Camilla eliminada exitosamente.',
+        data: deletedPatient,
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
+}
