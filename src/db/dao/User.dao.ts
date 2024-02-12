@@ -1,10 +1,12 @@
 import mongoose from 'mongoose'
 import UserModel from '../model/User.model'
+import Logger from '../../routes/util/Logger'
 
 export default class UserDAO {
-  private static instance: UserDAO
-  private URL!: string
   private MONGODB!: typeof mongoose.connect
+  private static instance: UserDAO
+  private logger = new Logger()
+  private URL!: string
 
   constructor() {
     if (UserDAO.instance) return UserDAO.instance
@@ -13,14 +15,18 @@ export default class UserDAO {
     this.MONGODB = mongoose.connect
   }
 
+  private handleError(error: Error) {
+    this.logger.log(error.stack || error.toString())
+    return null
+  }
+
   async getAll() {
     try {
       this.MONGODB(this.URL)
       const users = await UserModel.find().select('-password -__v')
       return users
     } catch (error) {
-      console.error(error)
-      return null
+      return this.handleError(error as Error)
     }
   }
 
@@ -30,8 +36,7 @@ export default class UserDAO {
       const user = await UserModel.findOne({ username }).select('-__v')
       return user
     } catch (error) {
-      console.error(error)
-      return null
+      return this.handleError(error as Error)
     }
   }
 
@@ -42,8 +47,7 @@ export default class UserDAO {
       await newUser.save()
       return newUser
     } catch (error) {
-      console.error(error)
-      return null
+      return this.handleError(error as Error)
     }
   }
 }

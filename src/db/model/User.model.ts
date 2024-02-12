@@ -24,6 +24,6 @@ userSchema.methods.isValidPassword = async function (password: string) {
   return bcrypt.compare(password, this.password)
 }
 
-const UserModel = mongoose.model<UserDocument>('users', userSchema)
+const UserModel = mongoose.model('users', userSchema)
 
 export default UserModel
