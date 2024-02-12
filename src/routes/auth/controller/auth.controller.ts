@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
 import UserDAO from '../../../db/dao/User.dao'
-import comparePassword from '../../util/comparePassword'
 
 export default {
   login: async (req: Request, res: Response, next: NextFunction) => {
@@ -13,7 +12,7 @@ export default {
 
       if (username && password) {
         const user = await new UserDAO().getByUsername(username)
-        if (!user || !comparePassword(password, user.password)) {
+        if (!user || !user.isValidPassword(password)) {
           handleInvalid(401)
           return
         }

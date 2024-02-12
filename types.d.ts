@@ -1,6 +1,8 @@
-type User = {
+interface User {
   username: string
   password: string
   name: string
-  lastname: string
+  lastName: string
+  isAdmin: boolean
+  isValidPassword: (password: string) => boolean
 }

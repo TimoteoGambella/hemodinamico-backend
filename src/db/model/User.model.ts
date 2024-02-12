@@ -1,7 +1,10 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
+import { Document } from 'mongoose'
 
-const userSchema = new mongoose.Schema({
+interface UserDocument extends User, Document {}
+
+const userSchema = new mongoose.Schema<UserDocument>({
   name: { type: String, required: true },
   lastName: { type: String, required: true },
   username: { type: String, required: true, unique: true },
@@ -21,11 +24,6 @@ userSchema.methods.isValidPassword = async function (password: string) {
   return bcrypt.compare(password, this.password)
 }
 
-const Model = mongoose.model('users', userSchema)
+const UserModel = mongoose.model<UserDocument>('users', userSchema)
 
-export default class UserModel extends Model {
-  constructor(user: User) {
-    super()
-    return new Model(user)
-  }
-}
+export default UserModel
