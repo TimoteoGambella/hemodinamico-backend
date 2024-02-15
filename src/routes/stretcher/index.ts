@@ -6,6 +6,7 @@ import validateSchema from '../middleware/validateSchema'
 const router = express.Router()
 
 router.get('/list', Controller.getAll)
+router.get('/:id', Controller.getOne)
 router.post('/create', validateSchema(StretcherModel), Controller.register)
 router.delete('/delete', Controller.delete)
 

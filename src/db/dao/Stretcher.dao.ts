@@ -21,33 +21,40 @@ export default class StretcherDAO {
     return null
   }
 
+  private async populate(stretcher: Stretcher[]) {
+    const stretchers: Stretcher[] = []
+    for (const s of stretcher) {
+      if (s.patientId) {
+        const patient = await new PatientDAO().getById(s.patientId as ObjectId)
+        if (patient) {
+          patient.stretcherId = undefined
+          s.patientId = patient
+        }
+      }
+      stretchers.push(s)
+    }
+    return stretchers
+  }
+
   async getAll(populate?: boolean) {
     try {
       this.MONGODB(this.URL)
       const stretcher = await StretcherModel.find().select('-__v')
       if (!populate) return stretcher
-      const stretchers: Stretcher[] = []
-      for (const s of stretcher) {
-        if (s.patientId) {
-          const patient = await new PatientDAO().getById(s.patientId as ObjectId)
-          if (patient) {
-            patient.stretcherId = undefined
-            s.patientId = patient
-          }
-        }
-        stretchers.push(s)
-      }
-      return stretcher
+      return this.populate(stretcher)
     } catch (error) {
       return this.handleError(error as Error)
     }
   }
 
-  async getById(id: string) {
+  async getById(id: string, populate?: boolean) {
     try {
       this.MONGODB(this.URL)
       const stretcher = await StretcherModel.findOne({ _id: id }).select('-__v')
-      return stretcher
+      if (!stretcher || !populate) return stretcher
+      if(stretcher && !populate) return stretcher
+      const populatedStretcher = await this.populate([stretcher])
+      return populatedStretcher[0]
     } catch (error) {
       return this.handleError(error as Error)
     }

@@ -1,14 +1,24 @@
 import { Request, Response, NextFunction } from 'express'
 import StretcherDAO from '../../../db/dao/Stretcher.dao'
 
-
 export default {
   getAll: async (_req: Request, res: Response, next: NextFunction) => {
     const { populate } = _req.query
     try {
-      const stretcher = await new StretcherDAO().getAll(!!populate)
+      const stretcher = await new StretcherDAO().getAll(populate === 'true')
       if (!stretcher) throw new Error('Error al obtener las camillas.')
       res.status(200).json({ message: 'Get all stretcher', data: stretcher })
+    } catch (error) {
+      next(error)
+    }
+  },
+  getOne: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    const { populate } = req.query
+    try {
+      const stretcher = await new StretcherDAO().getById(id, populate === 'true')
+      if (!stretcher) throw new Error('Error al obtener la camilla.')
+      res.status(200).json({ message: 'Get one stretcher', data: stretcher })
     } catch (error) {
       next(error)
     }
