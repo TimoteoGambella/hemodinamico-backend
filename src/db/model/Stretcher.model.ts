@@ -14,7 +14,7 @@ const stretcherSchema = new mongoose.Schema<StretcherDocument>({
 stretcherSchema.pre('save', async function (next) {
   if (this.isNew && !this.label) {
     const num = await this.model('stretcher').countDocuments()
-    this.label = 'Camilla ' + (num + 1)
+    this.label = 'Cama ' + (num + 1)
   }
   next()
 })
