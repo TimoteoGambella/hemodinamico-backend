@@ -1,6 +1,5 @@
-import mongoose, { ObjectId } from 'mongoose'
+import mongoose from 'mongoose'
 import StretcherModel from '../model/Stretcher.model'
-import PatientDAO from '../dao/Patient.dao'
 import Logger from '../../routes/util/Logger'
 
 export default class StretcherDAO {
@@ -21,27 +20,13 @@ export default class StretcherDAO {
     return null
   }
 
-  private async populate(stretcher: Stretcher[]) {
-    const stretchers: Stretcher[] = []
-    for (const s of stretcher) {
-      if (s.patientId) {
-        const patient = await new PatientDAO().getById(s.patientId as ObjectId)
-        if (patient) {
-          patient.stretcherId = undefined
-          s.patientId = patient
-        }
-      }
-      stretchers.push(s)
-    }
-    return stretchers
-  }
-
   async getAll(populate?: boolean) {
     try {
       this.MONGODB(this.URL)
-      const stretcher = await StretcherModel.find().select('-__v')
-      if (!populate) return stretcher
-      return this.populate(stretcher)
+      const stretcher = await StretcherModel.find()
+        .populate(populate ? 'patientId' : '')
+        .select('-__v')
+      return stretcher
     } catch (error) {
       return this.handleError(error as Error)
     }
@@ -50,11 +35,10 @@ export default class StretcherDAO {
   async getById(id: string, populate?: boolean) {
     try {
       this.MONGODB(this.URL)
-      const stretcher = await StretcherModel.findOne({ _id: id }).select('-__v')
-      if (!stretcher || !populate) return stretcher
-      if(stretcher && !populate) return stretcher
-      const populatedStretcher = await this.populate([stretcher])
-      return populatedStretcher[0]
+      const stretcher = await StretcherModel.findOne({ _id: id })
+        .populate(populate ? 'patientId' : '')
+        .select('-__v')
+      return stretcher
     } catch (error) {
       return this.handleError(error as Error)
     }
@@ -84,7 +68,10 @@ export default class StretcherDAO {
   async update(id: string, stretcher: Stretcher) {
     try {
       this.MONGODB(this.URL)
-      const updatedStretcher = await StretcherModel.findOneAndUpdate({ _id: id }, stretcher)
+      const updatedStretcher = await StretcherModel.findOneAndUpdate(
+        { _id: id },
+        stretcher
+      )
       return updatedStretcher
     } catch (error) {
       return this.handleError(error as Error)

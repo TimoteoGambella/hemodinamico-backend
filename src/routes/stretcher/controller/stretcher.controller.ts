@@ -37,7 +37,7 @@ export default {
     }
   },
   delete: async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.query
+    const { id } = req.params
     try {
       if (!id) {
         res.status(400).json({ message: 'ID no proporcionado.' })

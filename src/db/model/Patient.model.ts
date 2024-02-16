@@ -20,8 +20,14 @@ const patientSchema = new mongoose.Schema<PatientDocument>({
       message: 'El DNI debe tener 8 dígitos.',
     },
   },
+  timestamp: {
+    type: Number,
+    required: false,
+    default: Date.now(),
+    immutable: true,
+  },
 })
 
-const PatientModel = mongoose.model('patient', patientSchema)
+const PatientModel = mongoose.model('patients', patientSchema)
 
 export default PatientModel

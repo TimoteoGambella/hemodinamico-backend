@@ -10,6 +10,12 @@ const userSchema = new mongoose.Schema<UserDocument>({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
+  timestamp: {
+    type: Number,
+    required: false,
+    default: Date.now(),
+    immutable: true,
+  },
 })
 
 userSchema.pre('save', async function (next) {

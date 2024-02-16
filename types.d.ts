@@ -4,6 +4,7 @@ interface User {
   name: string
   lastName: string
   isAdmin: boolean
+  timestamp: number
   isValidPassword: (password: string) => boolean
 }
 
@@ -15,35 +16,125 @@ interface Patient {
   weight: number
   height: number
   stretcherId: unknown
+  timestamp: number
 }
 
 interface GasometricSamples {
   vena: {
-    'Sat O2': number
+    sat: number
     pC02: number
-  },
+  }
   arteria: {
-    'Sat O2': number
+    sat: number
     pC02: number
-    Lactato: number
-    'Delta CO2': number | undefined
+    lactato: number
+    delta: number | undefined
   }
 }
 
 interface IndirectFick {
-  Hemoglobina: number
-  'Consumo O2 (VO2)': number | undefined
-  'Diferencia A-V sistémica': number | undefined
-  'Contenido O2 en AP': number | undefined
-  'Contenido O2 en Ao': number | undefined
-  'Capacidad de Hb': number | undefined
-  'Gasto cardíaco': number | undefined
-  'Indice cardíaco': number | undefined
+  hemoglobina: number
+  consumo: number | undefined
+  diferencia: number | undefined
+  contenido: {
+    ap: number | undefined
+    ao: number | undefined
+  }
+  capacidad : number | undefined
+  gasto: number | undefined
+  indice: number | undefined
 }
 
 interface Stretcher {
   label: string
   patientId: unknown
-  'muestras gasométricas': GasometricSamples
-  'fick indirecto': IndirectFick
+  muestra: GasometricSamples
+  fick: IndirectFick
+  timestamp: number
+}
+
+interface Hematology {
+  hemoglobina: number | null
+  plaquetas: number | null
+  leucocitos: number | null
+  bastones: number | null
+  segmentados: number | null
+  INR: number | null
+  protrombina: number | null
+  TPA: number | null
+}
+
+interface LiverProfile {
+  TGO: number | null
+  TGP: number | null
+  albumina: number | null
+  fosfatasa: number | null
+  bilirrubina: {
+    total: number | null
+    directa: number | null
+    indirecta: number | null
+  }
+}
+
+interface CardiacProfile {
+  troponina: number | null
+  CPK: number | null
+  PRO: number | null
+  CA125: number | null
+}
+
+interface Infective {
+  proteinaC: number | null
+  procalcitonina: number | null
+  cultivo: 'hemocultivo' | 'urocultivo' | 'cultivo de secreción' | null
+  resultado: boolean | null
+  germen: string | null
+}
+
+interface Kidney {
+  urea: number | null
+  creatinina: number | null
+  TFG: number | null
+}
+
+interface Diagnostic {
+  type: 'shock' | 'falla cardíaca' | 'infarto' | 'valvular' | null
+  subtype: {
+    type:
+      | 'isquémico'
+      | 'no isquémico'
+      | 'crónica'
+      | 'f.c.a.d'
+      | 'aguda'
+      | 'st no elevado'
+      | 'st elevado'
+      | 'aórtico'
+      | 'mitral'
+      | 'tricúspide'
+      | null
+
+    subtype:
+      | 'isquemia'
+      | 'no isquemia'
+      | 'anterior'
+      | 'anterosepta'
+      | 'inferior'
+      | 'inf/post/la'
+      | 'insuficiente'
+      | 'estenosis'
+      | 'doble lesión'
+      | null
+  }
+  FEVI: '>50%' | '40-' | '<40%' | null
+}
+
+interface Laboratory {
+  patientId: string | Patient | null
+  blood_type: string | null
+  hematology: Hematology
+  liver_profile: LiverProfile
+  cardiac_profile: CardiacProfile
+  infective: Infective
+  kidney: Kidney
+  timestamp: number
 }
