@@ -26,7 +26,6 @@ laboratorySchema.pre('save', function (next) {
 })
 
 function initValues(lab: LaboratoryDocument) {
-  lab.patientId = null
   lab.blood_type = null
   lab.hematology = {
     hemoglobina: null,
