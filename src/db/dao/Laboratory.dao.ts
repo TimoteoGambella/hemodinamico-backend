@@ -1,19 +1,11 @@
-import mongoose, { ObjectId } from 'mongoose'
 import LaboratoryModel from '../model/Laboratory.model'
 import Logger from '../../routes/util/Logger'
+import { ObjectId } from 'mongoose'
 
 export default class LaboratoryDAO {
-  private MONGODB!: typeof mongoose.connect
-  private static instance: LaboratoryDAO
   private logger = new Logger()
-  private URL!: string
 
-  constructor() {
-    if (LaboratoryDAO.instance) return LaboratoryDAO.instance
-
-    this.URL = process.env.MONGODB_URI || ''
-    this.MONGODB = mongoose.connect
-  }
+  constructor() {}
 
   private handleError(error: Error) {
     this.logger.log(error.stack || error.toString())
@@ -22,7 +14,6 @@ export default class LaboratoryDAO {
 
   async getAll(populate = false) {
     try {
-      this.MONGODB(this.URL)
       const laboratories = await LaboratoryModel.find()
         .populate(populate ? 'patientId' : '')
         .select('-__v')
@@ -34,7 +25,6 @@ export default class LaboratoryDAO {
 
   async getById(_id: string, populate = false) {
     try {
-      this.MONGODB(this.URL)
       const laboratory = await LaboratoryModel.findOne({ _id })
         .populate(populate ? 'patientId' : '')
         .select('-__v')
@@ -46,7 +36,6 @@ export default class LaboratoryDAO {
 
   async create(patientId: ObjectId) {
     try {
-      this.MONGODB(this.URL)
       const newLab = new LaboratoryModel({ patientId })
       await newLab.save()
       return newLab
@@ -57,7 +46,6 @@ export default class LaboratoryDAO {
 
   async update(_id: string, currentLab: Laboratory, newLab: Laboratory) {
     try {
-      this.MONGODB(this.URL)
       const updatedFields = this.mergeNestedValues(currentLab, newLab)
       const updatedLab = await LaboratoryModel.findByIdAndUpdate(
         { _id },

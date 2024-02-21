@@ -1,19 +1,10 @@
-import mongoose from 'mongoose'
 import StretcherModel from '../model/Stretcher.model'
 import Logger from '../../routes/util/Logger'
 
 export default class StretcherDAO {
-  private MONGODB!: typeof mongoose.connect
-  private static instance: StretcherDAO
   private logger = new Logger()
-  private URL!: string
 
-  constructor() {
-    if (StretcherDAO.instance) return StretcherDAO.instance
-
-    this.URL = process.env.MONGODB_URI || ''
-    this.MONGODB = mongoose.connect
-  }
+  constructor() {}
 
   private handleError(error: Error) {
     this.logger.log(error.stack || error.toString())
@@ -22,7 +13,6 @@ export default class StretcherDAO {
 
   async getAll(populate?: boolean) {
     try {
-      this.MONGODB(this.URL)
       const stretcher = await StretcherModel.find()
         .populate(populate ? 'patientId' : '')
         .select('-__v')
@@ -34,7 +24,6 @@ export default class StretcherDAO {
 
   async getById(id: string, populate?: boolean) {
     try {
-      this.MONGODB(this.URL)
       const stretcher = await StretcherModel.findOne({ _id: id })
         .populate(populate ? 'patientId' : '')
         .select('-__v')
@@ -46,7 +35,6 @@ export default class StretcherDAO {
 
   async getOneFreeStretcher() {
     try {
-      this.MONGODB(this.URL)
       const stretcher = await StretcherModel.findOne({ patientId: null })
       return stretcher
     } catch (error) {
@@ -56,7 +44,6 @@ export default class StretcherDAO {
 
   async create(stretcher: Stretcher) {
     try {
-      this.MONGODB(this.URL)
       const newStretcher = new StretcherModel(stretcher)
       await newStretcher.save()
       return newStretcher
@@ -67,7 +54,6 @@ export default class StretcherDAO {
 
   async update(id: string, stretcher: Stretcher) {
     try {
-      this.MONGODB(this.URL)
       const updatedStretcher = await StretcherModel.findOneAndUpdate(
         { _id: id },
         stretcher
@@ -80,7 +66,6 @@ export default class StretcherDAO {
 
   async delete(_id: string) {
     try {
-      this.MONGODB(this.URL)
       const deletedStretcher = await StretcherModel.findOneAndDelete({ _id })
       return deletedStretcher
     } catch (error) {
