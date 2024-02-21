@@ -7,7 +7,7 @@ export default function cookieSessionConfig() {
     maxAge: ms('8h'),
     httpOnly: true,
     secure: process.env.NODE_ENV === 'prod',
-    secret: process.env.SEION_SECRET || 'secret',
+    secret: process.env.SESSION_SECRET || 'secret',
     sameSite: process.env.NODE_ENV === 'prod' ? 'none' : 'strict',
   })
 }

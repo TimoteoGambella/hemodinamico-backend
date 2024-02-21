@@ -6,7 +6,6 @@ interface LaboratoryDocument extends Laboratory, Document {}
 
 const laboratorySchema = new mongoose.Schema<LaboratoryDocument>({
   patientId: { type: ObjectId, required: true, ref: 'patients' },
-  blood_type: { type: String, required: false },
   hematology: { type: Object, required: false },
   liver_profile: { type: Object, required: false },
   cardiac_profile: { type: Object, required: false },
@@ -26,7 +25,6 @@ laboratorySchema.pre('save', function (next) {
 })
 
 function initValues(lab: LaboratoryDocument) {
-  lab.blood_type = null
   lab.hematology = {
     hemoglobina: null,
     bastones: null,

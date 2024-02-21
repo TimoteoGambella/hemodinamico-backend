@@ -34,7 +34,7 @@ export default class PatientDAO {
     try {
       this.MONGODB(this.URL)
       const patient = await PatientModel.findOne({ _id }).select('-__v')
-      return patient
+      return patient?.toObject()
     } catch (error) {
       return this.handleError(error as Error)
     }
@@ -64,7 +64,7 @@ export default class PatientDAO {
   async update(id: string, patient: Patient) {
     try {
       this.MONGODB(this.URL)
-      const updatedPatient = await PatientModel.findOneAndUpdate({ _id: id }, patient)
+      const updatedPatient = await PatientModel.findOneAndUpdate({ _id: id }, patient, { new: true })
       return updatedPatient
     } catch (error) {
       return this.handleError(error as Error)

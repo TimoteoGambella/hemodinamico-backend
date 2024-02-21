@@ -38,7 +38,7 @@ export default class LaboratoryDAO {
       const laboratory = await LaboratoryModel.findOne({ _id })
         .populate(populate ? 'patientId' : '')
         .select('-__v')
-      return laboratory
+      return laboratory?.toObject()
     } catch (error) {
       return this.handleError(error as Error)
     }
@@ -55,14 +55,42 @@ export default class LaboratoryDAO {
     }
   }
 
-  async update(_id: string, lab: Laboratory) {
+  async update(_id: string, currentLab: Laboratory, newLab: Laboratory) {
     try {
       this.MONGODB(this.URL)
-      const updatedLab = await LaboratoryModel.findOneAndUpdate({ _id }, lab)
+      const updatedFields = this.mergeNestedValues(currentLab, newLab)
+      const updatedLab = await LaboratoryModel.findByIdAndUpdate(
+        { _id },
+        { $set: updatedFields },
+        { new: true }
+      )
       return updatedLab
     } catch (error) {
       return this.handleError(error as Error)
     }
+  }
+
+  private mergeNestedValues(currentLab: Laboratory, newLab: Laboratory) {
+    const updatedFields: Partial<Laboratory> = {}
+    for (const [key, value] of Object.entries(newLab)) {
+      if (typeof value === 'object') {
+        for (const [subKey, subValue] of Object.entries(value)) {
+          if (typeof subValue === 'object') {
+            value[subKey] = {
+              ...(currentLab[key as keyof Laboratory]?.[
+                subKey as keyof Laboratory[keyof Laboratory]
+              ] ?? {}),
+              ...subValue,
+            }
+          }
+        }
+        updatedFields[key as keyof Laboratory] = {
+          ...((currentLab[key as keyof Laboratory] as object) ?? {}),
+          ...value,
+        }
+      } else updatedFields[key as keyof Laboratory] = value
+    }
+    return updatedFields
   }
 
   async delete(_id: string) {

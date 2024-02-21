@@ -7,6 +7,7 @@ const router = express.Router()
 
 router.get('/list', Controller.getAll)
 router.post('/create', validateSchema(PatientModel), Controller.register)
-router.delete('/delete', Controller.delete)
+router.patch('/update/:id', Controller.update)
+router.delete('/delete/:id', Controller.delete)
 
 export default router

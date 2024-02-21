@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import PatientDAO from '../../../db/dao/Patient.dao'
 import StretcherDAO from '../../../db/dao/Stretcher.dao'
+import { ObjectId } from 'mongoose'
+import PatientModel from '../../../db/model/Patient.model'
 
 export default {
   getAll: async (_req: Request, res: Response, next: NextFunction) => {
@@ -17,7 +19,9 @@ export default {
     try {
       const existPatient = await new PatientDAO().getByDNI(patient.dni)
       if (existPatient) {
-        res.status(409).json({ message: `Paciente con DNI ${patient.dni} ya registrado.` })
+        res
+          .status(409)
+          .json({ message: `Paciente con DNI ${patient.dni} ya registrado.` })
         return
       }
 
@@ -51,14 +55,45 @@ export default {
       next(error)
     }
   },
-  delete: async (req: Request, res: Response, next: NextFunction) => {
-    const { dni } = req.query
+  update: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    const patient = req.body as Patient
     try {
-      if (!dni) {
+      if (!patient || Object.keys(patient).length === 0) {
+        res.status(400).json({
+          message: 'No se ha proporcionado la información del paciente.',
+        })
+        return
+      }
+      const exists = await new PatientDAO().getById(id as unknown as ObjectId)
+      if (!exists) {
+        res.status(404).json({ message: 'Paciente no encontrado.' })
+        return
+      }
+      const newPatient = { ...exists, ...patient }
+      const error = new PatientModel(newPatient).validateSync()
+      if (error) {
+        res.status(400).json({ message: error })
+        return
+      }
+      const updatedPatient = await new PatientDAO().update(id, newPatient)
+      if (!updatedPatient) throw new Error('Error al actualizar paciente.')
+      res.status(200).json({
+        message: 'Paciente actualizado exitosamente.',
+        data: updatedPatient,
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
+  delete: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    try {
+      if (!id) {
         res.status(400).json({ message: 'DNI no proporcionado.' })
         return
       }
-      const patient = await new PatientDAO().getByDNI(Number(dni))
+      const patient = await new PatientDAO().getById(id as unknown as ObjectId)
       if (!patient) {
         res.status(404).json({ message: 'Paciente no encontrado.' })
         return

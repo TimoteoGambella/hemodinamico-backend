@@ -5,12 +5,21 @@ import mongoose from 'mongoose'
 interface PatientDocument extends Patient, Document {}
 
 const patientSchema = new mongoose.Schema<PatientDocument>({
+  laboratoryId: { type: ObjectId, required: false, ref: 'laboratories' },
   stretcherId: { type: ObjectId, required: false, ref: 'stretcher' },
   gender: { type: String, required: true, enum: ['M', 'F'] },
   fullname: { type: String, required: true },
   height: { type: Number, required: true },
   weight: { type: Number, required: true },
   age: { type: Number, required: true },
+  bloodType: {
+    type: String,
+    required: false,
+    enum: {
+      values: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+      message: 'Tipo de sangre no válido.',
+    },
+  },
   dni: {
     type: Number,
     required: true,

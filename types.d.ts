@@ -15,7 +15,9 @@ interface Patient {
   age: number
   weight: number
   height: number
+  bloodType: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
   stretcherId: unknown
+  laboratoryId: unknown
   timestamp: number
 }
 
@@ -130,7 +132,6 @@ interface Diagnostic {
 
 interface Laboratory {
   patientId: string | Patient | null
-  blood_type: string | null
   hematology: Hematology
   liver_profile: LiverProfile
   cardiac_profile: CardiacProfile
