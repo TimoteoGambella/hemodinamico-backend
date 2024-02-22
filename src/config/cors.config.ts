@@ -5,7 +5,7 @@ export default function corsConfig() {
   if (!CLIENT_URL) throw new Error('CLIENT_URL is not defined')
   return cors({
     origin: CLIENT_URL.split(',').map((url) => url.trim()),
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PREFLIGHT'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'PREFLIGHT'],
     credentials: true,
   })
 }

@@ -42,8 +42,7 @@ function initValues(lab: LaboratoryDocument) {
     TGP: null,
     bilirrubina: {
       total: null,
-      directa: null,
-      indirecta: null,
+      directa: null
     },
   }
   lab.cardiac_profile = {

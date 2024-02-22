@@ -74,7 +74,6 @@ interface LiverProfile {
   bilirrubina: {
     total: number | null
     directa: number | null
-    indirecta: number | null
   }
 }
 
