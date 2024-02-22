@@ -4,9 +4,9 @@ import logger from 'morgan'
 
 import Router from './routes'
 import corsConfig from './config/cors.config'
-import cookieSessionConfig from './config/cookieSession.conf'
+import cookieSessionConfig from './config/cookieSession.config'
 import handleInternalError from './routes/util/handleInternalError'
-import { initDBConnection } from './config/dbConnection'
+import { initDBConnection } from './config/dbConnection.config'
 import { AddressInfo } from 'net'
 
 const app = express()
