@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { Document } from 'mongoose'
+import { Document, UpdateQuery } from 'mongoose'
 import mongoose from 'mongoose'
 
 interface LaboratoryDocument extends Laboratory, Document {}
@@ -9,6 +9,7 @@ const laboratorySchema = new mongoose.Schema<LaboratoryDocument>({
   hematology: { type: Object, required: false },
   liver_profile: { type: Object, required: false },
   cardiac_profile: { type: Object, required: false },
+  diagnostic: { type: Object, required: false },
   infective: { type: Object, required: false },
   kidney: { type: Object, required: false },
   timestamp: {
@@ -21,6 +22,14 @@ const laboratorySchema = new mongoose.Schema<LaboratoryDocument>({
 
 laboratorySchema.pre('save', function (next) {
   if (this.isNew) initValues(this)
+  next()
+})
+
+laboratorySchema.pre('findOneAndUpdate', function (next) {
+  const doc = (this.getUpdate() as UpdateQuery<Laboratory>)?.['$set']
+  if(doc) {
+    doc.infective.resultado = doc.infective.resultado === 'true'
+  }
   next()
 })
 
@@ -57,6 +66,12 @@ function initValues(lab: LaboratoryDocument) {
     proteinaC: null,
     resultado: null,
     cultivo: null,
+  }
+  lab.diagnostic = {
+    type: null,
+    subtype: null,
+    child: null,
+    FEVI: null,
   }
   lab.kidney = {
     creatinina: null,

@@ -63,12 +63,12 @@ export default class LaboratoryDAO {
     for (const [key, value] of Object.entries(newLab)) {
       if (typeof value === 'object') {
         for (const [subKey, subValue] of Object.entries(value)) {
-          if (typeof subValue === 'object') {
+          if (Object.prototype.toString.call(subValue) === '[object Object]') {
             value[subKey] = {
               ...(currentLab[key as keyof Laboratory]?.[
                 subKey as keyof Laboratory[keyof Laboratory]
               ] ?? {}),
-              ...subValue,
+              ...(subValue as object),
             }
           }
         }

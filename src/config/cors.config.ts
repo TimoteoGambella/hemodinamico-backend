@@ -1,10 +1,13 @@
 import cors from 'cors'
 
+export const ALLOWED_ORIGINS = process.env.CLIENT_URL?.split(',').map((url) =>
+  url.trim()
+)
+
 export default function corsConfig() {
-  const CLIENT_URL = process.env.CLIENT_URL
-  if (!CLIENT_URL) throw new Error('CLIENT_URL is not defined')
+  if (!ALLOWED_ORIGINS) throw new Error('CLIENT_URL is not defined')
   return cors({
-    origin: CLIENT_URL.split(',').map((url) => url.trim()),
+    origin: ALLOWED_ORIGINS,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'PREFLIGHT'],
     credentials: true,
   })
