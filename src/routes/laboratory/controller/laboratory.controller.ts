@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import LaboratoryDAO from '../../../db/dao/Laboratory.dao'
 import PatientDAO from '../../../db/dao/Patient.dao'
+import { ObjectId } from 'mongoose'
 
 export default {
   getOne: async (req: Request, res: Response, next: NextFunction) => {
@@ -47,7 +48,7 @@ export default {
             .json({ message: 'El paciente ya tiene asociado un laboratorio.' })
           return
         }
-        const lab = await new LaboratoryDAO().create(patient._id)
+        const lab = await new LaboratoryDAO().create(patient._id as ObjectId)
         if (!lab) throw new Error('Laboratory could not be created.')
         await new PatientDAO().update(patientId, {
           laboratoryId: lab._id,

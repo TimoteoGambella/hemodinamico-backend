@@ -9,6 +9,7 @@ interface User {
 }
 
 interface Patient {
+  [x: string]: unknown
   fullname: string
   dni: number
   gender: 'M' | 'F'

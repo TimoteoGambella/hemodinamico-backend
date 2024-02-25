@@ -21,7 +21,7 @@ export default class PatientDAO {
     }
   }
 
-  async getById(_id: ObjectId) {
+  async getById(_id: ObjectId): Promise<Patient | null | undefined> {
     try {
       const patient = await PatientModel.findOne({ _id }).select('-__v')
       return patient?.toObject()
@@ -51,7 +51,11 @@ export default class PatientDAO {
 
   async update(id: string, patient: Patient) {
     try {
-      const updatedPatient = await PatientModel.findOneAndUpdate({ _id: id }, patient, { new: true })
+      const updatedPatient = await PatientModel.findOneAndUpdate(
+        { _id: id },
+        patient,
+        { new: true }
+      )
       return updatedPatient
     } catch (error) {
       return this.handleError(error as Error)
@@ -60,7 +64,9 @@ export default class PatientDAO {
 
   async delete(patient: Patient) {
     try {
-      const deletedPatient = await PatientModel.findOneAndDelete({ dni: patient.dni })
+      const deletedPatient = await PatientModel.findOneAndDelete({
+        dni: patient.dni,
+      })
       return deletedPatient
     } catch (error) {
       return this.handleError(error as Error)
