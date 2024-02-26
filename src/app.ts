@@ -17,6 +17,7 @@ initDBConnection()
     app.use(morganConfig())
     app.use(corsConfig())
     app.use(express.json())
+    app.set('trust proxy', 1)
     app.use(cookieSessionConfig())
 
     app.use('/api', Router)
