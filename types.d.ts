@@ -24,34 +24,68 @@ interface Patient {
 
 interface GasometricSamples {
   vena: {
-    sat: number
-    pC02: number
+    sat: number | null
+    pC02: number | null
   }
   arteria: {
-    sat: number
-    pC02: number
-    lactato: number
-    delta: number | undefined
+    sat: number | null
+    pC02: number | null
+    lactato: number | null
+    delta: number | null
   }
 }
 
 interface IndirectFick {
-  hemoglobina: number
-  consumo: number | undefined
-  diferencia: number | undefined
+  hemoglobina: number | null
+  consumo: number | null
+  diferencia: number | null
   contenido: {
-    ap: number | undefined
-    ao: number | undefined
+    ap: number | null
+    ao: number | null
   }
-  capacidad : number | undefined
-  gasto: number | undefined
-  indice: number | undefined
+  capacidad: number | null
+  gasto: number | null
+  indice: number | null
+}
+
+interface ArteryCatheter {
+  presion: {
+    AD: number | null
+    capilar: number | null
+    mediaSistemica: number | null
+  }
+  PAP: {
+    sistolica: number | null
+    diastolica: number | null
+  }
+  gasto: number | null
+}
+
+interface SuppliedDrugs {
+  name:
+    | 'noradrenalina'
+    | 'vasopresina'
+    | 'adrenalina'
+    | 'dobutamina'
+    | 'dopamina'
+    | 'levosimendan'
+    | 'nitroglicerina'
+    | 'nitroprusiato',
+  dose: number
+}
+
+interface Supplied {
+  drogas: SuppliedDrugs[]
 }
 
 interface Stretcher {
   label: string
   patientId: unknown
+  aid: ('ecmo' | 'balon')[] | null
+  patientHeartRate: number | null
   muestra: GasometricSamples
+  cateter: ArteryCatheter
+  suministros: Supplied
   fick: IndirectFick
   timestamp: number
 }
@@ -102,28 +136,28 @@ interface Kidney {
 interface Diagnostic {
   type: 'shock' | 'falla_cardiaca' | 'infarto' | 'valvular' | null
   subtype:
-      | 'isquemico'
-      | 'no_isquemico'
-      | 'cronica'
-      | 'FCAD'
-      | 'aguda'
-      | 'st_no_elevado'
-      | 'st_elevado'
-      | 'aortico'
-      | 'mitral'
-      | 'tricuspide'
-      | null,
+    | 'isquemico'
+    | 'no_isquemico'
+    | 'cronica'
+    | 'FCAD'
+    | 'aguda'
+    | 'st_no_elevado'
+    | 'st_elevado'
+    | 'aortico'
+    | 'mitral'
+    | 'tricuspide'
+    | null
   child:
-      | 'isquemia'
-      | 'no_isquemica'
-      | 'anterior'
-      | 'anterosepta'
-      | 'inferior'
-      | 'inf_post_la'
-      | 'insuficiente'
-      | 'estenosis'
-      | 'doble_lesion'
-      | null,
+    | 'isquemia'
+    | 'no_isquemica'
+    | 'anterior'
+    | 'anterosepta'
+    | 'inferior'
+    | 'inf_post_la'
+    | 'insuficiente'
+    | 'estenosis'
+    | 'doble_lesion'
+    | null
   FEVI: '50' | '40-' | '40' | null
 }
 
