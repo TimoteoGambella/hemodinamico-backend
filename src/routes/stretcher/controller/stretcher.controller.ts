@@ -36,6 +36,28 @@ export default {
       next(error)
     }
   },
+  update: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    const { flush } = req.query
+    const stretcher: Stretcher = req.body
+    try {
+      if (!id) {
+        res.status(400).json({ message: 'ID no proporcionado.' })
+        return
+      } if (flush === 'true') {
+        res.status(501).json({ message: 'Flush not implemented yet.' })
+        return
+      }
+      const updatedStretcher = await new StretcherDAO().update(String(id), stretcher)
+      if (!updatedStretcher) throw new Error('Error al actualizar la camilla.')
+      res.status(200).json({
+        message: 'Camilla actualizada exitosamente.',
+        data: updatedStretcher,
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
   delete: async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params
     try {
