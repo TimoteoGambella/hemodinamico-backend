@@ -20,6 +20,14 @@ const stretcherSchema = new mongoose.Schema<StretcherDocument>({
       drogas: [],
     },
   },
+  diagnostic: {
+    type: Object,
+    required: false,
+    default: {
+      type: null,
+      subtype: null,
+    },
+  },
   muestra: {
     type: Object,
     required: false,

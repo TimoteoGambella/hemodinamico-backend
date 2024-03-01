@@ -87,6 +87,10 @@ interface Stretcher {
   cateter: ArteryCatheter
   suministros: Supplied
   fick: IndirectFick
+  diagnostic: {
+    type: 'shock_isq' | 'shock' | 'falla_avanzada' | null
+    subtype: 'intermacs_1' | 'intermacs_2' | 'intermacs_3' | null
+  }
   timestamp: number
 }
 
