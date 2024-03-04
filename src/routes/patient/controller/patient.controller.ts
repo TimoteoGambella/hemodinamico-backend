@@ -101,7 +101,8 @@ export default {
       }
       const updatedPatient = await new PatientDAO().update(id, patient)
       if (!updatedPatient) throw new Error('Error al actualizar paciente.')
-      await handlerUpdateStretcher(updatedPatient, exists)
+      if (tmPatient.stretcherId !== String(exists.stretcherId))
+        await handlerUpdateStretcher(updatedPatient, exists)
       res.status(200).json({
         message: 'Paciente actualizado exitosamente.',
         data: updatedPatient,
