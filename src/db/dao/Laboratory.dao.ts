@@ -1,5 +1,7 @@
-import LaboratoryModel from '../model/Laboratory.model'
+import LaboratoryModel, { LaboratoryDocument } from '../model/Laboratory.model'
+import LabVersionDAO from './LabVersion.dao'
 import Logger from '../../routes/util/Logger'
+import DeleteLabDAO from './DeleteLab.dao'
 import { ObjectId } from 'mongoose'
 
 export default class LaboratoryDAO {
@@ -16,7 +18,6 @@ export default class LaboratoryDAO {
     try {
       const laboratories = await LaboratoryModel.find()
         .populate(populate ? 'patientId' : '')
-        .select('-__v')
       return laboratories
     } catch (error) {
       return this.handleError(error as Error)
@@ -27,7 +28,6 @@ export default class LaboratoryDAO {
     try {
       const laboratory = await LaboratoryModel.findOne({ _id })
         .populate(populate ? 'patientId' : '')
-        .select('-__v')
       return laboratory?.toObject()
     } catch (error) {
       return this.handleError(error as Error)
@@ -44,12 +44,14 @@ export default class LaboratoryDAO {
     }
   }
 
-  async update(_id: string, currentLab: Laboratory, newLab: Laboratory) {
+  async update(_id: string, currentLab: LaboratoryDocument, newLab: Laboratory, userId: ObjectId) {
     try {
+      const labVersionDAO = await new LabVersionDAO().create(currentLab, userId)
+      if (!labVersionDAO) return null
       const updatedFields = this.mergeNestedValues(currentLab, newLab)
       const updatedLab = await LaboratoryModel.findByIdAndUpdate(
         { _id },
-        { $set: updatedFields },
+        { $set: updatedFields, $inc: { __v: 1 } },
         { new: true }
       )
       return updatedLab
@@ -81,10 +83,12 @@ export default class LaboratoryDAO {
     return updatedFields
   }
 
-  async delete(_id: string) {
+  async delete(lab: LaboratoryDocument, userId: ObjectId) {
     try {
-      const lab = await LaboratoryModel.findOneAndDelete({ _id })
-      return lab
+      const saveLab = await new DeleteLabDAO().create(lab, userId)
+      if (!saveLab) return null
+      const deletedLab = await LaboratoryModel.findOneAndDelete({ _id: lab._id })
+      return deletedLab
     } catch (error) {
       return this.handleError(error as Error)
     }

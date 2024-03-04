@@ -76,7 +76,12 @@ export default {
         res.status(404).json({ message: 'Laboratorio no encontrado.' })
         return
       }
-      const lab = await new LaboratoryDAO().update(id, exist, laboratory)
+      const lab = await new LaboratoryDAO().update(
+        id,
+        exist,
+        laboratory,
+        req.session?.user?._id as ObjectId
+      )
       if (!lab) throw new Error('Laboratory could not be updated.')
       res
         .status(200)
@@ -93,7 +98,10 @@ export default {
         res.status(404).json({ message: 'Laboratorio no encontrado.' })
         return
       }
-      const deleted = await new LaboratoryDAO().delete(id)
+      const deleted = await new LaboratoryDAO().delete(
+        lab,
+        req.session?.user?._id as ObjectId
+      )
       if (!deleted) throw new Error('Laboratory could not be deleted.')
       await new PatientDAO().update(String(lab.patientId), {
         laboratoryId: null,

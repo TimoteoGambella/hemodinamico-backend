@@ -172,5 +172,19 @@ interface Laboratory {
   diagnostic: Diagnostic
   infective: Infective
   kidney: Kidney
-  timestamp: number
+  createdAt: number
+}
+
+interface LabVersions extends Laboratory {
+  refIsDeleted: boolean
+  patientId: unknown
+  editedBy: unknown
+  editedAt: number
+  refId: unknown
+}
+
+interface DeletedLabs extends Laboratory {
+  patientId: unknown
+  deletedBy: unknown
+  deletedAt: number
 }
