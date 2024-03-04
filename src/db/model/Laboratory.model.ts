@@ -71,7 +71,6 @@ const laboratorySchema = new mongoose.Schema<LaboratoryDocument>({
     default: {
       creatinina: null,
       urea: null,
-      TFG: null,
     },
   },
   timestamp: {
