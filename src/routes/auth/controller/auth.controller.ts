@@ -12,7 +12,7 @@ export default {
 
       if (username && password) {
         const user = await new UserDAO().getByUsername(username)
-        if (!user || !user.isValidPassword(password)) {
+        if (!user || !await user.isValidPassword(password)) {
           handleInvalid(401)
           return
         }

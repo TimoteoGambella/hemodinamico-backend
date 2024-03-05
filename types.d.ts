@@ -5,7 +5,7 @@ interface User {
   lastName: string
   isAdmin: boolean
   timestamp: number
-  isValidPassword: (password: string) => boolean
+  isValidPassword: (password: string) => Promise<boolean>
 }
 
 interface Patient {
