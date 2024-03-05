@@ -2,6 +2,13 @@ import { Request, Response, NextFunction } from 'express'
 import UserDAO from '../../../db/dao/User.dao'
 
 export default {
+  userInfo: (req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.json(req.session!.user)
+    } catch (error) {
+      next(error)
+    }
+  },
   login: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { username, password } = req.body
@@ -16,9 +23,9 @@ export default {
           handleInvalid(401)
           return
         }
-        req.session!.user = { _id: user._id, isAdmin: user.isAdmin }
         const tmp = JSON.parse(JSON.stringify(user))
         delete tmp.password
+        req.session!.user = tmp
         res.json({
           message: 'Inicio de sesión exitoso.',
           user: tmp,
