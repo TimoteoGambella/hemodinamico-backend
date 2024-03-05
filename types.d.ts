@@ -173,13 +173,13 @@ interface Laboratory {
   infective: Infective
   kidney: Kidney
   editedBy: unknown
+  editedAt: number | null
   createdAt: number
 }
 
 interface LabVersions extends Laboratory {
   refIsDeleted: boolean
   patientId: unknown
-  editedAt: number
   refId: unknown
 }
 

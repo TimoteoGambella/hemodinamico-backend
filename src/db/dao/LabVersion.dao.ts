@@ -50,6 +50,7 @@ export default class LabVersionDAO {
       const newLabVersion = new LabVersionModel({
         ...lab,
         refId: currentId,
+        editedAt: Date.now(),
         __v: lab.__v,
       })
       await newLabVersion.save()

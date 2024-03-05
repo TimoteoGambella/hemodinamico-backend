@@ -73,6 +73,12 @@ export default {
     type: ObjectId,
     required: false,
   },
+  editedAt: {
+    type: Number,
+    required: false,
+    default: null,
+    inmutable: true,
+  },
   createdAt: {
     type: Number,
     required: false,
