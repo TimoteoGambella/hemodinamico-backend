@@ -7,7 +7,7 @@ interface LaboratoryDocument extends LabVersions, Document {}
 
 const labVersionSchema = new mongoose.Schema<LaboratoryDocument>({
   ...LabSchema,
-  editedBy: { type: ObjectId, required: true, ref: 'users', inmutable: true },
+  editedBy: { type: ObjectId, required: true, inmutable: true },
   refId: {
     type: ObjectId,
     required: true,

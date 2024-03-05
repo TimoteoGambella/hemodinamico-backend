@@ -43,13 +43,12 @@ export default class LabVersionDAO {
     }
   }
 
-  async create(lab: LaboratoryDocument, userId: ObjectId) {
+  async create(lab: LaboratoryDocument) {
     try {
       const currentId = lab._id
       delete lab._id
       const newLabVersion = new LabVersionModel({
         ...lab,
-        editedBy: userId,
         refId: currentId,
         __v: lab.__v,
       })

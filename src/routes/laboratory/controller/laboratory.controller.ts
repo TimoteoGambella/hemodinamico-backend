@@ -48,7 +48,10 @@ export default {
             .json({ message: 'El paciente ya tiene asociado un laboratorio.' })
           return
         }
-        const lab = await new LaboratoryDAO().create(patient._id as ObjectId)
+        const lab = await new LaboratoryDAO().create(
+          patient._id as ObjectId,
+          req.session?.user?._id as ObjectId
+        )
         if (!lab) throw new Error('Laboratory could not be created.')
         await new PatientDAO().update(patientId, {
           laboratoryId: lab._id,

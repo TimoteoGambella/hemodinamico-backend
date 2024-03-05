@@ -69,6 +69,10 @@ export default {
       urea: null,
     },
   },
+  editedBy: {
+    type: ObjectId,
+    required: false,
+  },
   createdAt: {
     type: Number,
     required: false,

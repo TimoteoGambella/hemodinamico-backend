@@ -34,9 +34,9 @@ export default class LaboratoryDAO {
     }
   }
 
-  async create(patientId: ObjectId) {
+  async create(patientId: ObjectId, createdBy: ObjectId) {
     try {
-      const newLab = new LaboratoryModel({ patientId })
+      const newLab = new LaboratoryModel({ patientId, editedBy: createdBy })
       await newLab.save()
       return newLab
     } catch (error) {
@@ -46,9 +46,10 @@ export default class LaboratoryDAO {
 
   async update(_id: string, currentLab: LaboratoryDocument, newLab: Laboratory, userId: ObjectId) {
     try {
-      const labVersionDAO = await new LabVersionDAO().create(currentLab, userId)
+      const labVersionDAO = await new LabVersionDAO().create(currentLab)
       if (!labVersionDAO) return null
       const updatedFields = this.mergeNestedValues(currentLab, newLab)
+      updatedFields.editedBy = userId
       const updatedLab = await LaboratoryModel.findByIdAndUpdate(
         { _id },
         { $set: updatedFields, $inc: { __v: 1 } },
