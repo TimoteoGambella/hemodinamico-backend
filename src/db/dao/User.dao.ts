@@ -26,7 +26,10 @@ export default class UserDAO {
 
   async getByUsername(username: string) {
     try {
-      const user = await UserModel.findOne({ username }).select('-__v')
+      const user = await UserModel.findOne({
+        username,
+        isDeleted: false,
+      }).select('-__v')
       return user
     } catch (error) {
       return this.handleError(error as Error)
