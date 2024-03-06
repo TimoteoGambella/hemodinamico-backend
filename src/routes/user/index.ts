@@ -8,5 +8,6 @@ const router = express.Router()
 
 router.get('/list', validateAdmin, Controller.getAll)
 router.post('/create', validateSchema(UserModel), Controller.register)
+router.delete('/delete/:username', validateAdmin, Controller.delete)
 
 export default router

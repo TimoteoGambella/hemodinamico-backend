@@ -1,22 +1,11 @@
+import UserSchema from './constants/UserSchema'
+import { Document } from 'mongoose'
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
-import { Document } from 'mongoose'
 
 interface UserDocument extends User, Document {}
 
-const userSchema = new mongoose.Schema<UserDocument>({
-  name: { type: String, required: true },
-  lastName: { type: String, required: true },
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  isAdmin: { type: Boolean, default: false },
-  timestamp: {
-    type: Number,
-    required: false,
-    default: Date.now(),
-    immutable: true,
-  },
-})
+const userSchema = new mongoose.Schema<UserDocument>(UserSchema)
 
 userSchema.pre('save', async function (next) {
   if(!this.isModified('password')) return next()

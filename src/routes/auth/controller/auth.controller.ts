@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
+import { ReqSession } from '../../../../module-types'
 import UserDAO from '../../../db/dao/User.dao'
 
 export default {
-  userInfo: (req: Request, res: Response, next: NextFunction) => {
+  userInfo: (request: Request, res: Response, next: NextFunction) => {
+    const req = request as ReqSession
     try {
       res.json(req.session!.user)
     } catch (error) {
@@ -47,7 +49,8 @@ export default {
       next(error)
     }
   },
-  session: (req: Request, res: Response, next: NextFunction) => {
+  session: (request: Request, res: Response, next: NextFunction) => {
+    const req = request as ReqSession
     try {
       if (req.session && req.session.user) {
         res.status(200).end()

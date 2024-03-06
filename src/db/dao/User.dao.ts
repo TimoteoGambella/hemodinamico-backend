@@ -1,5 +1,7 @@
 import UserModel from '../model/User.model'
 import Logger from '../../routes/util/Logger'
+import { ObjectId } from 'mongoose'
+import { ObjectId as ObjId } from 'mongodb'
 
 export default class UserDAO {
   private logger = new Logger()
@@ -13,7 +15,9 @@ export default class UserDAO {
 
   async getAll() {
     try {
-      const users = await UserModel.find().select('-password -__v')
+      const users = await UserModel.find({ isDeleted: false }).select(
+        '-password -__v'
+      )
       return users
     } catch (error) {
       return this.handleError(error as Error)
@@ -34,6 +38,23 @@ export default class UserDAO {
       const newUser = new UserModel(user)
       await newUser.save()
       return newUser
+    } catch (error) {
+      return this.handleError(error as Error)
+    }
+  }
+
+  async delete(username: string, deletedBy: ObjectId) {
+    try {
+      const deletedUser = await UserModel.findOneAndUpdate(
+        { username },
+        {
+          isDeleted: true,
+          deletedAt: Date.now(),
+          username: new ObjId().toString(),
+          deletedBy,
+        }
+      )
+      return deletedUser
     } catch (error) {
       return this.handleError(error as Error)
     }

@@ -4,7 +4,10 @@ interface User {
   name: string
   lastName: string
   isAdmin: boolean
-  timestamp: number
+  createdAt: number
+  isDeleted: boolean
+  deletedBy: unknown
+  deletedAt: number
   isValidPassword: (password: string) => Promise<boolean>
 }
 
