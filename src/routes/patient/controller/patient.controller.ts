@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from 'express'
-import PatientDAO from '../../../db/dao/Patient.dao'
-import StretcherDAO from '../../../db/dao/Stretcher.dao'
-import { ObjectId } from 'mongoose'
 import PatientModel from '../../../db/model/Patient.model'
+import { Request, Response, NextFunction } from 'express'
+import StretcherDAO from '../../../db/dao/Stretcher.dao'
+import { ReqSession } from '../../../../module-types'
+import PatientDAO from '../../../db/dao/Patient.dao'
+import { ObjectId } from 'mongoose'
 
 async function handlerStretcher(patient: Patient) {
   if (patient.stretcherId === 'auto') {
@@ -15,7 +16,10 @@ async function handlerStretcher(patient: Patient) {
   } else return
 }
 
-async function handlerUpdateStretcher(createdPatient: Patient, oldPatient?: Patient){
+async function handlerUpdateStretcher(
+  createdPatient: Patient,
+  oldPatient?: Patient
+) {
   if (createdPatient.stretcherId) {
     const updatedStretcher = await new StretcherDAO().update(
       String(createdPatient.stretcherId),
@@ -24,7 +28,8 @@ async function handlerUpdateStretcher(createdPatient: Patient, oldPatient?: Pati
       } as Stretcher
     )
     if (!updatedStretcher) throw new Error('Error al actualizar camilla.')
-  } if (oldPatient && oldPatient.stretcherId) {
+  }
+  if (oldPatient && oldPatient.stretcherId) {
     const updatedStretcher = await new StretcherDAO().update(
       String(oldPatient.stretcherId),
       {
@@ -45,7 +50,8 @@ export default {
       next(error)
     }
   },
-  register: async (req: Request, res: Response, next: NextFunction) => {
+  register: async (request: Request, res: Response, next: NextFunction) => {
+    const req = request as ReqSession
     const patient: Patient = req.body
     try {
       const existPatient = await new PatientDAO().getByDNI(patient.dni)
@@ -64,7 +70,10 @@ export default {
         return
       }
 
-      const createdPatient = await new PatientDAO().create(patient)
+      const createdPatient = await new PatientDAO().create(
+        patient,
+        req.session.user?._id as unknown as ObjectId
+      )
       if (!createdPatient) throw new Error('Error al crear paciente.')
 
       await handlerUpdateStretcher(createdPatient)
@@ -77,7 +86,8 @@ export default {
       next(error)
     }
   },
-  update: async (req: Request, res: Response, next: NextFunction) => {
+  update: async (request: Request, res: Response, next: NextFunction) => {
+    const req = request as ReqSession
     const { id } = req.params
     const tmPatient = req.body as Patient
     try {
@@ -99,7 +109,11 @@ export default {
         res.status(400).json({ message: error.message })
         return
       }
-      const updatedPatient = await new PatientDAO().update(id, patient)
+      const updatedPatient = await new PatientDAO().update(
+        id,
+        patient,
+        req.session.user?._id as unknown as ObjectId
+      )
       if (!updatedPatient) throw new Error('Error al actualizar paciente.')
       if (tmPatient.stretcherId !== String(exists.stretcherId))
         await handlerUpdateStretcher(updatedPatient, exists)
@@ -111,7 +125,8 @@ export default {
       next(error)
     }
   },
-  delete: async (req: Request, res: Response, next: NextFunction) => {
+  delete: async (request: Request, res: Response, next: NextFunction) => {
+    const req = request as ReqSession
     const { id } = req.params
     try {
       if (!id) {
@@ -122,8 +137,23 @@ export default {
       if (!patient) {
         res.status(404).json({ message: 'Paciente no encontrado.' })
         return
+      } else if (patient.laboratoryId) {
+        res.status(409).json({
+          message:
+            'El paciente que intenta eliminar tiene un laboratorio asignado. Primero debe eliminar el laboratorio.',
+        })
+        return
+      } else if (patient.stretcherId) {
+        res.status(409).json({
+          message:
+            'El paciente que intenta eliminar tiene una cama asignada. Primero debe eliminar la cama.',
+        })
+        return
       }
-      const deletedPatient = await new PatientDAO().delete(patient as Patient)
+      const deletedPatient = await new PatientDAO().delete(
+        patient._id,
+        req.session.user?._id as unknown as ObjectId
+      )
       if (!deletedPatient) throw new Error('Error al eliminar paciente.')
       if (deletedPatient.stretcherId) {
         await new StretcherDAO().update(String(deletedPatient.stretcherId), {

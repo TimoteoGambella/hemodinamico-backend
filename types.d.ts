@@ -22,7 +22,24 @@ interface Patient {
   bloodType: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
   stretcherId: unknown
   laboratoryId: unknown
-  timestamp: number
+  createdAt: number
+  /**
+   * Should be a ObjectId of a user
+   */
+  editedBy: unknown
+  editedAt: number | null
+  /**
+   * Indicates if the document has been deleted
+   */
+  isDeleted: boolean
+  /**
+   * Indicates who deleted the document by their ObjectId
+   */
+  deletedBy: unknown | undefined
+  /**
+   * Indicates the time when the document was deleted
+   */
+  deletedAt: number | undefined
 }
 
 interface GasometricSamples {

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import LaboratoryDAO from '../../../db/dao/Laboratory.dao'
 import LabVersionDAO from '../../../db/dao/LabVersion.dao'
+import { ReqSession } from '../../../../module-types'
 import PatientDAO from '../../../db/dao/Patient.dao'
 import { ObjectId } from 'mongoose'
 
@@ -55,7 +56,8 @@ export default {
       next(error)
     }
   },
-  create: async (req: Request, res: Response, next: NextFunction) => {
+  create: async (request: Request, res: Response, next: NextFunction) => {
+    const req = request as ReqSession
     const { patientId } = req.body
     try {
       if (!patientId)
@@ -73,12 +75,12 @@ export default {
         }
         const lab = await new LaboratoryDAO().create(
           patient._id as ObjectId,
-          req.session?.user?._id as ObjectId
+          req.session?.user?._id as unknown as ObjectId
         )
         if (!lab) throw new Error('Laboratory could not be created.')
         await new PatientDAO().update(patientId, {
           laboratoryId: lab._id,
-        } as Patient)
+        } as Patient, req.session?.user?._id as unknown as ObjectId)
         res
           .status(201)
           .json({ message: 'Laboratory created successfully.', data: lab })
@@ -118,7 +120,8 @@ export default {
       next(error)
     }
   },
-  delete: async (req: Request, res: Response, next: NextFunction) => {
+  delete: async (request: Request, res: Response, next: NextFunction) => {
+    const req = request as ReqSession
     const { id } = req.params
     try {
       const lab = await new LaboratoryDAO().getById(id)
@@ -128,12 +131,12 @@ export default {
       }
       const deleted = await new LaboratoryDAO().delete(
         lab,
-        req.session?.user?._id as ObjectId
+        req.session?.user?._id as unknown as ObjectId
       )
       if (!deleted) throw new Error('Laboratory could not be deleted.')
       await new PatientDAO().update(String(lab.patientId), {
         laboratoryId: null,
-      } as Patient)
+      } as Patient, req.session?.user?._id as unknown as ObjectId)
       res
         .status(200)
         .json({ message: 'Laboratory deleted successfully.', data: deleted })

@@ -1,39 +1,25 @@
-import { ObjectId } from 'mongodb'
+import PatientSchema from './constants/PatientSchema'
 import { Document } from 'mongoose'
+import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 
-interface PatientDocument extends Patient, Document {}
+export interface PatientDocument extends Patient, Document {}
 
 const patientSchema = new mongoose.Schema<PatientDocument>({
-  laboratoryId: { type: ObjectId, required: false, ref: 'laboratories' },
-  stretcherId: { type: ObjectId, required: false, ref: 'stretcher' },
-  gender: { type: String, required: true, enum: ['M', 'F'] },
-  fullname: { type: String, required: true },
-  height: { type: Number, required: true },
-  weight: { type: Number, required: true },
-  age: { type: Number, required: true },
-  bloodType: {
-    type: String,
+  ...PatientSchema,
+  isDeleted: {
+    type: Boolean,
     required: false,
-    enum: {
-      values: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-      message: 'Tipo de sangre no válido.',
-    },
+    default: false,
   },
-  dni: {
-    type: Number,
-    required: true,
-    unique: true,
-    validate: {
-      validator: (dni: number) => dni.toString().length === 8,
-      message: 'El DNI debe tener 8 dígitos.',
-    },
+  deletedBy: {
+    type: ObjectId,
+    required: false,
+    ref: 'users',
   },
-  timestamp: {
+  deletedAt: {
     type: Number,
     required: false,
-    default: Date.now(),
-    immutable: true,
   },
 })
 
