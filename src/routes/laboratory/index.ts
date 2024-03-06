@@ -7,6 +7,7 @@ const router = express.Router()
 
 router.get('/list', Controller.getAll)
 router.get('/:id', Controller.getOne)
+router.get('/list/versions/:id', Controller.getAllVersions)
 router.post('/create', validateSchema(LaboratoryModel), Controller.create)
 router.patch('/update/:id', Controller.update)
 router.delete('/delete/:id', Controller.delete)

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import LaboratoryDAO from '../../../db/dao/Laboratory.dao'
+import LabVersionDAO from '../../../db/dao/LabVersion.dao'
 import PatientDAO from '../../../db/dao/Patient.dao'
 import { ObjectId } from 'mongoose'
 
@@ -28,6 +29,28 @@ export default {
       res
         .status(200)
         .json({ message: 'Get all laboratories', data: laboratories })
+    } catch (error) {
+      next(error)
+    }
+  },
+  getAllVersions: async (_req: Request, res: Response, next: NextFunction) => {
+    const { populate } = _req.query
+    const { id } = _req.params
+    try {
+      const shouldPopulate = populate === 'true'
+      const exist = await new LaboratoryDAO().getById(id)
+      if (!exist) {
+        res.status(404).json({ message: 'Laboratorio no encontrado.' })
+        return
+      }
+      const laboratories = await new LabVersionDAO().getAllById(
+        id,
+        shouldPopulate
+      )
+      if (!laboratories) throw new Error('Could not obtain all laboratories.')
+      res
+        .status(200)
+        .json({ message: 'Get all versions of laboratory', data: laboratories })
     } catch (error) {
       next(error)
     }
@@ -66,8 +89,10 @@ export default {
   },
   update: async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params
-    const laboratory = req.body as Laboratory
+    const laboratory = req.body
     try {
+      laboratory.infective.resultado =
+        laboratory?.infective?.resultado === 'true'
       if (!laboratory || Object.keys(laboratory).length === 0) {
         res.status(400).json({
           message: 'No se ha proporcionado la información de laboratorio.',

@@ -175,19 +175,33 @@ interface Laboratory {
   diagnostic: Diagnostic
   infective: Infective
   kidney: Kidney
+  /**
+   * Should be a ObjectId of a user
+   */
   editedBy: unknown
   editedAt: number | null
   createdAt: number
+  /**
+   * Indicates if the document has been deleted
+   */
+  isDeleted: boolean
+  /**
+   * Indicates who deleted the document by their ObjectId
+   */
+  deletedBy: unknown | undefined
+  /**
+   * Indicates the time when the document was deleted
+   */
+  deletedAt: number | undefined
 }
 
-interface LabVersions extends Laboratory {
-  refIsDeleted: boolean
+interface LabVersions extends Omit<Laboratory, 'isDeleted'> {
+  /**
+   * Should be a ObjectId of a patient - required
+   */
   patientId: unknown
+  /**
+   * Refers to the _id prop of a document in the laboratory collection 
+   */
   refId: unknown
-}
-
-interface DeletedLabs extends Laboratory {
-  patientId: unknown
-  deletedBy: unknown
-  deletedAt: number
 }

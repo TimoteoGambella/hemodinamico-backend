@@ -1,5 +1,5 @@
 import { LaboratoryDocument } from '../model/Laboratory.model'
-import LabVersionModel from '../model/LabVersion.model'
+import LabVersionModel from '../model/versions/LabVersion.model'
 import Logger from '../../routes/util/Logger'
 import { ObjectId } from 'mongoose'
 
@@ -13,9 +13,10 @@ export default class LabVersionDAO {
     return null
   }
 
-  async getAll() {
+  async getAllById(_id: string, populate = false) {
     try {
-      const laboratories = await LabVersionModel.find()
+      const laboratories = await LabVersionModel.find({ refId: _id })
+        .populate(populate ? ['editedBy', 'patientId'] : '')
       return laboratories
     } catch (error) {
       return this.handleError(error as Error)
@@ -50,7 +51,6 @@ export default class LabVersionDAO {
       const newLabVersion = new LabVersionModel({
         ...lab,
         refId: currentId,
-        editedAt: Date.now(),
         __v: lab.__v,
       })
       await newLabVersion.save()

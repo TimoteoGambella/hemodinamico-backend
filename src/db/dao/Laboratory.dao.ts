@@ -1,7 +1,6 @@
 import LaboratoryModel, { LaboratoryDocument } from '../model/Laboratory.model'
 import LabVersionDAO from './LabVersion.dao'
 import Logger from '../../routes/util/Logger'
-import DeleteLabDAO from './DeleteLab.dao'
 import { ObjectId } from 'mongoose'
 
 export default class LaboratoryDAO {
@@ -16,7 +15,7 @@ export default class LaboratoryDAO {
 
   async getAll(populate = false) {
     try {
-      const laboratories = await LaboratoryModel.find()
+      const laboratories = await LaboratoryModel.find({ isDeleted: false })
         .populate(populate ? 'patientId' : '')
       return laboratories
     } catch (error) {
@@ -91,9 +90,9 @@ export default class LaboratoryDAO {
 
   async delete(lab: LaboratoryDocument, userId: ObjectId) {
     try {
-      const saveLab = await new DeleteLabDAO().create(lab, userId)
-      if (!saveLab) return null
-      const deletedLab = await LaboratoryModel.findOneAndDelete({ _id: lab._id })
+      const deletedLab = await LaboratoryModel.findByIdAndUpdate({ _id: lab._id }, {
+        $set: { isDeleted: true, deletedBy: userId, deletedAt: Date.now() },
+      })
       return deletedLab
     } catch (error) {
       return this.handleError(error as Error)

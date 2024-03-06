@@ -71,6 +71,7 @@ export default {
   },
   editedBy: {
     type: ObjectId,
+    ref: 'users',
     required: false,
   },
   editedAt: {
@@ -82,7 +83,7 @@ export default {
   createdAt: {
     type: Number,
     required: false,
-    default: Date.now(),
+    default: () => Date.now(),
     immutable: true,
   },
 }
