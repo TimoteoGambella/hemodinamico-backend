@@ -55,10 +55,8 @@ export default {
     required: false,
     default: {
       procalcitonina: null,
-      germen: null,
       proteinaC: null,
-      resultado: null,
-      cultivo: null,
+      cultivos: [],
     },
   },
   kidney: {
@@ -86,4 +84,4 @@ export default {
     default: () => Date.now(),
     immutable: true,
   },
-}
+} 

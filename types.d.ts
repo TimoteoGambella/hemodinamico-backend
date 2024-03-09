@@ -143,12 +143,16 @@ interface CardiacProfile {
   CA125: number | null
 }
 
+type Cultivo = {
+  cultivo: 'hemocultivo' | 'urocultivo' | 'cultivo de secreción'
+  resultado: boolean
+  germen: string | null
+}
+
 interface Infective {
   proteinaC: number | null
   procalcitonina: number | null
-  cultivo: 'hemocultivo' | 'urocultivo' | 'cultivo de secreción' | null
-  resultado: boolean | null
-  germen: string | null
+  cultivos: Cultivo[]
 }
 
 interface Kidney {
