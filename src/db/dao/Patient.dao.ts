@@ -55,7 +55,7 @@ export default class PatientDAO {
     }
   }
 
-  async update(id: string, patient: Patient, editedBy: ObjectId) {
+  async update(id: string, patient: Patient, editedBy: ObjectId | string) {
     try {
       const current = (await this.getById(id, true)) as PatientDocument | null
       if (!current) throw new Error('Paciente no encontrado.')

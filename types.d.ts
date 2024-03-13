@@ -98,7 +98,13 @@ interface Supplied {
   drogas: SuppliedDrugs[]
 }
 
+interface StretcherDiagnostic {
+  type: 'shock_isq' | 'shock' | 'falla_avanzada' | null
+  subtype: 'intermacs_1' | 'intermacs_2' | 'intermacs_3' | null
+}
+
 interface Stretcher {
+  [x: string]: unknown
   label: string
   patientId: unknown
   aid: ('ecmo' | 'balon')[] | null
@@ -107,11 +113,18 @@ interface Stretcher {
   cateter: ArteryCatheter
   suministros: Supplied
   fick: IndirectFick
-  diagnostic: {
-    type: 'shock_isq' | 'shock' | 'falla_avanzada' | null
-    subtype: 'intermacs_1' | 'intermacs_2' | 'intermacs_3' | null
-  }
-  timestamp: number
+  diagnostic: StretcherDiagnostic
+  editedAt: number | null,
+  editedBy: unknown,
+  isDeleted: boolean,
+  deletedBy: unknown | undefined,
+  deletedAt: number | undefined,
+  createdAt: number
+}
+
+interface StretcherVersions extends Omit<Stretcher, 'isDeleted'> {
+  patientId: unknown
+  refId: unknown
 }
 
 interface Hematology {

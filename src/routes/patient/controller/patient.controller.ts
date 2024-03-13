@@ -5,11 +5,11 @@ import { ReqSession } from '../../../../module-types'
 import PatientDAO from '../../../db/dao/Patient.dao'
 import { ObjectId } from 'mongoose'
 
-async function handlerStretcher(patient: Patient) {
+async function handlerStretcher(patient: Patient, createdBy: string) {
   if (patient.stretcherId === 'auto') {
     let stretcher = await new StretcherDAO().getOneFreeStretcher()
     if (!stretcher) {
-      stretcher = await new StretcherDAO().create({} as Stretcher)
+      stretcher = await new StretcherDAO().create({} as Stretcher, createdBy)
       if (!stretcher) throw new Error('Error al crear camilla.')
     }
     patient.stretcherId = stretcher._id
@@ -18,6 +18,7 @@ async function handlerStretcher(patient: Patient) {
 
 async function handlerUpdateStretcher(
   createdPatient: Patient,
+  editedBy: string,
   oldPatient?: Patient
 ) {
   if (createdPatient.stretcherId) {
@@ -25,7 +26,8 @@ async function handlerUpdateStretcher(
       String(createdPatient.stretcherId),
       {
         patientId: createdPatient._id,
-      } as Stretcher
+      } as Stretcher,
+      editedBy
     )
     if (!updatedStretcher) throw new Error('Error al actualizar camilla.')
   }
@@ -34,7 +36,8 @@ async function handlerUpdateStretcher(
       String(oldPatient.stretcherId),
       {
         patientId: null,
-      } as Stretcher
+      } as Stretcher,
+      editedBy
     )
     if (!updatedStretcher) throw new Error('Error al actualizar camilla.')
   }
@@ -62,7 +65,7 @@ export default {
         return
       }
 
-      await handlerStretcher(patient)
+      await handlerStretcher(patient, req.session.user!._id)
 
       const error = new PatientModel(patient).validateSync()
       if (error) {
@@ -76,7 +79,7 @@ export default {
       )
       if (!createdPatient) throw new Error('Error al crear paciente.')
 
-      await handlerUpdateStretcher(createdPatient)
+      await handlerUpdateStretcher(createdPatient, req.session.user!._id)
 
       res.status(201).json({
         message: 'Paciente creado exitosamente.',
@@ -102,7 +105,7 @@ export default {
         res.status(404).json({ message: 'Paciente no encontrado.' })
         return
       }
-      await handlerStretcher(tmPatient)
+      await handlerStretcher(tmPatient, req.session.user!._id)
       const patient = { ...exists, ...tmPatient }
       const error = new PatientModel(patient).validateSync()
       if (error) {
@@ -116,7 +119,11 @@ export default {
       )
       if (!updatedPatient) throw new Error('Error al actualizar paciente.')
       if (tmPatient.stretcherId !== String(exists.stretcherId))
-        await handlerUpdateStretcher(updatedPatient, exists)
+        await handlerUpdateStretcher(
+          updatedPatient,
+          req.session.user!._id,
+          exists
+        )
       res.status(200).json({
         message: 'Paciente actualizado exitosamente.',
         data: updatedPatient,
@@ -156,9 +163,13 @@ export default {
       )
       if (!deletedPatient) throw new Error('Error al eliminar paciente.')
       if (deletedPatient.stretcherId) {
-        await new StretcherDAO().update(String(deletedPatient.stretcherId), {
-          patientId: null,
-        } as Stretcher)
+        await new StretcherDAO().update(
+          String(deletedPatient.stretcherId),
+          {
+            patientId: null,
+          } as Stretcher,
+          req.session.user!._id
+        )
       }
       res.status(200).json({
         message: 'Paciente eliminado exitosamente.',

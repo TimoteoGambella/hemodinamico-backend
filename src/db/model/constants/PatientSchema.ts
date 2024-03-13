@@ -1,8 +1,18 @@
 import { ObjectId } from 'mongodb'
 
 export default {
-  laboratoryId: { type: ObjectId, required: false, ref: 'laboratories', default: null },
-  stretcherId: { type: ObjectId, required: false, ref: 'stretcher', default: null },
+  laboratoryId: {
+    type: ObjectId,
+    required: false,
+    ref: 'laboratories',
+    default: null,
+  },
+  stretcherId: {
+    type: ObjectId,
+    required: false,
+    ref: 'stretchers',
+    default: null,
+  },
   gender: { type: String, required: true, enum: ['M', 'F'] },
   fullname: { type: String, required: true },
   height: { type: Number, required: true },
