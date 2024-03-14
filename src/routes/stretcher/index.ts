@@ -7,8 +7,9 @@ const router = express.Router()
 
 router.get('/list', Controller.getAll)
 router.get('/:id', Controller.getOne)
+router.get('/list/versions/:id', Controller.getVersions)
 router.post('/create', validateSchema(StretcherModel), Controller.register)
-router.put('/update/:id', validateSchema(StretcherModel), Controller.update)
+router.patch('/update/:id', validateSchema(StretcherModel), Controller.update)
 router.delete('/delete/:id', Controller.delete)
 
 export default router

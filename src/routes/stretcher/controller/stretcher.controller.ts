@@ -1,3 +1,4 @@
+import StretcherVersionDAO from '../../../db/dao/StretcherVersion.dao'
 import { Request, Response, NextFunction } from 'express'
 import StretcherDAO from '../../../db/dao/Stretcher.dao'
 import { ReqSession } from '../../../../module-types'
@@ -24,6 +25,23 @@ export default {
       )
       if (!stretcher) throw new Error('Error al obtener la camilla.')
       res.status(200).json({ message: 'Get one stretcher', data: stretcher })
+    } catch (error) {
+      next(error)
+    }
+  },
+  getVersions: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    const { populate } = req.query
+    try {
+      const stretcher = await new StretcherVersionDAO().getAllBy(
+        id,
+        populate === 'true'
+      )
+      if (!stretcher) throw new Error('Error al obtener las versiones de la camilla.')
+      res.status(200).json({
+        message: 'Get all versions of stretcher',
+        data: stretcher,
+      })
     } catch (error) {
       next(error)
     }

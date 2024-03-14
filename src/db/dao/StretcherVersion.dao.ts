@@ -1,6 +1,7 @@
 import StretcherVersionModel from '../model/versions/StretcherVersion.model'
-import Logger from '../../routes/util/Logger'
 import { StretcherDocument } from '../model/Stretcher.model'
+import Logger from '../../routes/util/Logger'
+import StretcherDAO from './Stretcher.dao'
 
 export default class StretcherVersionDAO {
   private logger = new Logger()
@@ -17,6 +18,10 @@ export default class StretcherVersionDAO {
       const stretcher = await StretcherVersionModel.find({
         refId: _id,
       }).populate(populate ? 'patientId' : '')
+      const curStretcher = await new StretcherDAO().getById(_id, populate)
+      if (!curStretcher) throw new Error('Error al obtener la cama.')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      stretcher.push(curStretcher as any)
       return stretcher
     } catch (error) {
       return this.handleError(error as Error)

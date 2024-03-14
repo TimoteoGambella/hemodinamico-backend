@@ -91,7 +91,7 @@ export default {
   createdAt: {
     type: Number,
     required: false,
-    default: Date.now(),
+    default: () => Date.now(),
     immutable: true,
   },
 }
