@@ -1,5 +1,5 @@
-import { LaboratoryDocument } from '../model/Laboratory.model'
 import LabVersionModel from '../model/versions/LabVersion.model'
+import { LaboratoryDocument } from '../model/Laboratory.model'
 import Logger from '../../routes/util/Logger'
 import { ObjectId } from 'mongoose'
 
@@ -13,10 +13,27 @@ export default class LabVersionDAO {
     return null
   }
 
+  private populateOptions(populate: boolean) {
+    return populate
+      ? [{ path: 'editedBy', select: '-password' }, 'patientId']
+      : []
+  }
+
+  async getAll(populate = false) {
+    try {
+      const laboratories = await LabVersionModel.find().populate(
+        this.populateOptions(populate)
+      )
+      return laboratories
+    } catch (error) {
+      return this.handleError(error as Error)
+    }
+  }
+
   async getAllById(_id: string, populate = false) {
     try {
       const laboratories = await LabVersionModel.find({ refId: _id })
-        .populate(populate ? ['editedBy', 'patientId'] : '')
+        .populate(this.populateOptions(populate))
       return laboratories
     } catch (error) {
       return this.handleError(error as Error)

@@ -37,9 +37,9 @@ export default {
       next(error)
     }
   },
-  getAllVersions: async (_req: Request, res: Response, next: NextFunction) => {
-    const { id } = _req.params
-    const { populate, excludeCurrent } = _req.query
+  getVersionsById: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    const { populate, excludeCurrent } = req.query
     try {
       const shouldPopulate = populate === 'true'
       const exist = await new LaboratoryDAO().getById(id)
@@ -54,6 +54,19 @@ export default {
       if (!laboratories) throw new Error('Could not obtain all laboratories.')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if(excludeCurrent !== 'true') laboratories.push(exist as any)
+      res
+        .status(200)
+        .json({ message: 'Get all versions of laboratory', data: laboratories })
+    } catch (error) {
+      next(error)
+    }
+  },
+  getAllVersions: async (req: Request, res: Response, next: NextFunction) => {
+    const { populate } = req.query
+    try {
+      const shouldPopulate = populate === 'true'
+      const laboratories = await new LabVersionDAO().getAll(shouldPopulate)
+      if (!laboratories) throw new Error('Could not obtain all laboratories.')
       res
         .status(200)
         .json({ message: 'Get all versions of laboratory', data: laboratories })
