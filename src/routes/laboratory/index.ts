@@ -6,7 +6,7 @@ import validateSchema from '../middleware/validateSchema'
 const router = express.Router()
 
 router.get('/list', Controller.getAll)
-router.get('/:id', Controller.getOne)
+router.get('/:id', Controller.getById)
 router.get('/list/versions/:id', Controller.getAllVersions)
 router.post('/create', validateSchema(LaboratoryModel), Controller.create)
 router.patch('/update/:id', Controller.update)

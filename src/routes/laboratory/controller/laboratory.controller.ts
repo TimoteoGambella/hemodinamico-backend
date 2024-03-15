@@ -6,9 +6,9 @@ import PatientDAO from '../../../db/dao/Patient.dao'
 import { ObjectId } from 'mongoose'
 
 export default {
-  getOne: async (req: Request, res: Response, next: NextFunction) => {
-    const { populate } = req.query
+  getById: async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params
+    const { populate } = req.query
     try {
       const shouldPopulate = populate === 'true'
       const laboratory = await new LaboratoryDAO().getById(id, shouldPopulate)
@@ -22,10 +22,13 @@ export default {
     }
   },
   getAll: async (_req: Request, res: Response, next: NextFunction) => {
-    const { populate } = _req.query
+    const { populate, includeDeleted } = _req.query
     try {
       const shouldPopulate = populate === 'true'
-      const laboratories = await new LaboratoryDAO().getAll(shouldPopulate)
+      const laboratories = await new LaboratoryDAO().getAll(
+        shouldPopulate,
+        includeDeleted === 'true'
+      )
       if (!laboratories) throw new Error('Could not obtain all laboratories.')
       res
         .status(200)
@@ -78,9 +81,13 @@ export default {
           req.session?.user?._id as unknown as ObjectId
         )
         if (!lab) throw new Error('Laboratory could not be created.')
-        await new PatientDAO().update(patientId, {
-          laboratoryId: lab._id,
-        } as Patient, req.session?.user?._id as unknown as ObjectId)
+        await new PatientDAO().update(
+          patientId,
+          {
+            laboratoryId: lab._id,
+          } as Patient,
+          req.session?.user?._id as unknown as ObjectId
+        )
         res
           .status(201)
           .json({ message: 'Laboratory created successfully.', data: lab })
@@ -134,9 +141,13 @@ export default {
         req.session?.user?._id as unknown as ObjectId
       )
       if (!deleted) throw new Error('Laboratory could not be deleted.')
-      await new PatientDAO().update(String(lab.patientId), {
-        laboratoryId: null,
-      } as Patient, req.session?.user?._id as unknown as ObjectId)
+      await new PatientDAO().update(
+        String(lab.patientId),
+        {
+          laboratoryId: null,
+        } as Patient,
+        req.session?.user?._id as unknown as ObjectId
+      )
       res
         .status(200)
         .json({ message: 'Laboratory deleted successfully.', data: deleted })

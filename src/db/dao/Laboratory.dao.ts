@@ -13,10 +13,18 @@ export default class LaboratoryDAO {
     return null
   }
 
-  async getAll(populate = false) {
+  async getAll(populate = false, includeDeleted = false) {
     try {
-      const laboratories = await LaboratoryModel.find({ isDeleted: false })
-        .populate(populate ? 'patientId' : '')
+      let laboratories
+      if (!includeDeleted) {
+        laboratories = await LaboratoryModel.find({
+          isDeleted: false
+        }).populate(populate ? 'patientId' : '')
+      } else {
+        laboratories = await LaboratoryModel.find().populate(
+          populate ? 'patientId' : ''
+        )
+      }
       return laboratories
     } catch (error) {
       return this.handleError(error as Error)
