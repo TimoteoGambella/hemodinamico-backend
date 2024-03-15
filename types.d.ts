@@ -51,21 +51,11 @@ interface GasometricSamples {
     sat: number | null
     pC02: number | null
     lactato: number | null
-    delta: number | null
   }
 }
 
 interface IndirectFick {
   hemoglobina: number | null
-  consumo: number | null
-  diferencia: number | null
-  contenido: {
-    ap: number | null
-    ao: number | null
-  }
-  capacidad: number | null
-  gasto: number | null
-  indice: number | null
 }
 
 interface ArteryCatheter {

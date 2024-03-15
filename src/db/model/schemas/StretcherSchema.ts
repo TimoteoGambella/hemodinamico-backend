@@ -34,7 +34,6 @@ export default {
     required: false,
     default: {
       arteria: {
-        delta: null,
         lactato: null,
         pC02: null,
         sat: null,
@@ -65,16 +64,7 @@ export default {
     type: Object,
     required: false,
     default: {
-      gasto: null,
-      capacidad: null,
-      consumo: null,
-      diferencia: null,
       hemoglobina: null,
-      indice: null,
-      contenido: {
-        ao: null,
-        ap: null,
-      },
     },
   },
   editedBy: {
