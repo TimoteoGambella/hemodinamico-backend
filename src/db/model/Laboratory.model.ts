@@ -1,4 +1,4 @@
-import LabSchema from './constants/LabSchema'
+import LabSchema from './schemas/LabSchema'
 import { Document } from 'mongoose'
 import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'

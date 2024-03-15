@@ -1,4 +1,4 @@
-import StretcherSchema from './constants/StretcherSchema'
+import StretcherSchema from './schemas/StretcherSchema'
 import { ObjectId } from 'mongodb'
 import { Document } from 'mongoose'
 import mongoose from 'mongoose'

@@ -1,4 +1,4 @@
-import PatientSchema from '../constants/PatientSchema'
+import PatientSchema from '../schemas/PatientSchema'
 import { Document } from 'mongoose'
 import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'

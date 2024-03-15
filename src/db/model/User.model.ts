@@ -1,4 +1,4 @@
-import UserSchema from './constants/UserSchema'
+import UserSchema from './schemas/UserSchema'
 import { Document } from 'mongoose'
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
