@@ -1,7 +1,6 @@
 import { LaboratoryDocument } from '../model/Laboratory.model'
 import LabVersionModel from '../model/versions/LabVersion.model'
 import Logger from '../../routes/util/Logger'
-import LaboratoryDAO from './Laboratory.dao'
 import { ObjectId } from 'mongoose'
 
 export default class LabVersionDAO {
@@ -18,9 +17,6 @@ export default class LabVersionDAO {
     try {
       const laboratories = await LabVersionModel.find({ refId: _id })
         .populate(populate ? ['editedBy', 'patientId'] : '')
-      const curLab = await new LaboratoryDAO().getById(_id)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      laboratories.push(curLab as any)
       return laboratories
     } catch (error) {
       return this.handleError(error as Error)
