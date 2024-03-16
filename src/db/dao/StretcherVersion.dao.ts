@@ -13,11 +13,28 @@ export default class StretcherVersionDAO {
     return null
   }
 
+  private populateOptions(populate: boolean) {
+    return populate
+      ? [{ path: 'editedBy', select: '-password' }, 'patientId']
+      : []
+  }
+
+  async getAll(populate = false) {
+    try {
+      const stretcher = await StretcherVersionModel.find().populate(
+        this.populateOptions(populate)
+      )
+      return stretcher
+    } catch (error) {
+      return this.handleError(error as Error)
+    }
+  }
+
   async getAllBy(_id: string, populate?: boolean) {
     try {
       const stretcher = await StretcherVersionModel.find({
         refId: _id,
-      }).populate(populate ? 'patientId' : '')
+      }).populate(this.populateOptions(populate ?? false))
       const curStretcher = await new StretcherDAO().getById(_id, populate)
       if (!curStretcher) throw new Error('Error al obtener la cama.')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

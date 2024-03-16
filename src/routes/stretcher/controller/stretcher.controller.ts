@@ -29,7 +29,7 @@ export default {
       next(error)
     }
   },
-  getVersions: async (req: Request, res: Response, next: NextFunction) => {
+  getVersionsById: async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params
     const { populate } = req.query
     try {
@@ -43,6 +43,20 @@ export default {
         populate === 'true'
       )
       if (!stretcher) throw new Error('Error al obtener las versiones de la camilla.')
+      res.status(200).json({
+        message: 'Get all versions of stretcher',
+        data: stretcher,
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
+  getAllVersions: async (req: Request, res: Response, next: NextFunction) => {
+    const { populate } = req.query
+    try {
+      const shouldPopulate = populate === 'true'
+      const stretcher = await new StretcherVersionDAO().getAll(shouldPopulate)
+      if (!stretcher) throw new Error('Error al obtener las versiones de las camillas.')
       res.status(200).json({
         message: 'Get all versions of stretcher',
         data: stretcher,
