@@ -3,7 +3,7 @@ import LaboratoryDAO from '../../../db/dao/Laboratory.dao'
 import LabVersionDAO from '../../../db/dao/LabVersion.dao'
 import { ReqSession } from '../../../../module-types'
 import PatientDAO from '../../../db/dao/Patient.dao'
-import { ObjectId } from 'mongoose'
+import { ObjectId, startSession } from 'mongoose'
 
 export default {
   getById: async (req: Request, res: Response, next: NextFunction) => {
@@ -42,7 +42,7 @@ export default {
     const { populate, excludeCurrent } = req.query
     try {
       const shouldPopulate = populate === 'true'
-      const exist = await new LaboratoryDAO().getById(id)
+      const exist = await new LaboratoryDAO().getById(id, true)
       if (!exist) {
         res.status(404).json({ message: 'Laboratorio no encontrado.' })
         return
@@ -53,7 +53,7 @@ export default {
       )
       if (!laboratories) throw new Error('Could not obtain all laboratories.')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if(excludeCurrent !== 'true') laboratories.push(exist as any)
+      if (excludeCurrent !== 'true') laboratories.push(exist as any)
       res
         .status(200)
         .json({ message: 'Get all versions of laboratory', data: laboratories })
@@ -77,6 +77,8 @@ export default {
   create: async (request: Request, res: Response, next: NextFunction) => {
     const req = request as ReqSession
     const { patientId } = req.body
+    const session = await startSession()
+    session.startTransaction()
     try {
       if (!patientId)
         res.status(400).json({ message: 'El ID del paciente es requerido.' })
@@ -92,7 +94,7 @@ export default {
           return
         }
         const lab = await new LaboratoryDAO().create(
-          patient._id as ObjectId,
+          patient,
           req.session?.user?._id as unknown as ObjectId
         )
         if (!lab) throw new Error('Laboratory could not be created.')
@@ -103,14 +105,21 @@ export default {
           } as Patient,
           req.session?.user?._id as unknown as ObjectId
         )
+        await session.commitTransaction()
         res
           .status(201)
           .json({ message: 'Laboratory created successfully.', data: lab })
       }
     } catch (error) {
+      await session.abortTransaction()
       next(error)
+    } finally {
+      session.endSession()
     }
   },
+  /**
+   * @summary Esta función se deberia ejecutar justo despues de actualziar la información del paciente de ser el caso
+   */
   update: async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params
     const laboratory = req.body
@@ -128,11 +137,18 @@ export default {
         res.status(404).json({ message: 'Laboratorio no encontrado.' })
         return
       }
+      const patient = await new PatientDAO().getById(exist.patientId._id as string, false)
+      if (!patient) {
+        res.status(404).json({ message: 'Paciente no encontrado.' })
+        return
+      }
+      laboratory.patient = patient
       const lab = await new LaboratoryDAO().update(
         id,
         exist,
         laboratory,
-        req.session?.user?._id as ObjectId
+        req.session?.user?._id as ObjectId,
+        patient
       )
       if (!lab) throw new Error('Laboratory could not be updated.')
       res
@@ -157,7 +173,7 @@ export default {
       )
       if (!deleted) throw new Error('Laboratory could not be deleted.')
       await new PatientDAO().update(
-        String(lab.patientId),
+        String(lab.patientId._id),
         {
           laboratoryId: null,
         } as Patient,

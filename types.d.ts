@@ -192,7 +192,7 @@ interface Diagnostic {
 }
 
 interface Laboratory {
-  patientId: string | PatientData
+  patientId: Patient
   hematology: Hematology
   liver_profile: LiverProfile
   cardiac_profile: CardiacProfile

@@ -25,11 +25,12 @@ export default class PatientDAO {
   async getById(
     _id: ObjectId | string,
     asObject: boolean = true
-  ): Promise<Patient | PatientDocument | null | undefined> {
+  ) {
     try {
       const patient = await PatientModel.findOne({ _id })
-      if (asObject) return patient?.toObject()
-      else return patient
+      if (!patient) return null
+      else if (asObject) return patient.toObject() as Patient
+      else return patient as PatientDocument
     } catch (error) {
       return this.handleError(error as Error)
     }

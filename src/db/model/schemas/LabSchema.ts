@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 export default {
-  patientId: { type: ObjectId, required: true, ref: 'patients' },
+  patientId: { type: Object, required: false, default: null },
   hematology: {
     type: Object,
     required: false,

@@ -1,4 +1,4 @@
-import PatientModel from '../../../db/model/Patient.model'
+import PatientModel, { PatientDocument } from '../../../db/model/Patient.model'
 import { Request, Response, NextFunction } from 'express'
 import StretcherDAO from '../../../db/dao/Stretcher.dao'
 import { ReqSession } from '../../../../module-types'
@@ -140,7 +140,7 @@ export default {
         res.status(400).json({ message: 'DNI no proporcionado.' })
         return
       }
-      const patient = await new PatientDAO().getById(id as unknown as ObjectId)
+      const patient = (await new PatientDAO().getById(id)) as PatientDocument
       if (!patient) {
         res.status(404).json({ message: 'Paciente no encontrado.' })
         return
