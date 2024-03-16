@@ -33,6 +33,11 @@ export default {
     const { id } = req.params
     const { populate } = req.query
     try {
+      const exist = await new StretcherDAO().getById(id)
+      if (!exist) {
+        res.status(404).json({ message: 'Cama no encontrada.' })
+        return
+      }
       const stretcher = await new StretcherVersionDAO().getAllBy(
         id,
         populate === 'true'
