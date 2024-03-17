@@ -1,11 +1,15 @@
 import PatientVersionModel from '../model/versions/PatientVersion.model'
 import { PatientDocument } from '../model/Patient.model'
 import Logger from '../../routes/util/Logger'
+import { ClientSession } from 'mongoose'
 
 export default class PatientVersionDAO {
   private logger = new Logger()
+  private session: ClientSession | undefined
 
-  constructor() {}
+  constructor(session?: ClientSession) {
+    this.session = session
+  }
 
   private handleError(error: Error) {
     this.logger.log(error.stack || error.toString())
@@ -40,7 +44,7 @@ export default class PatientVersionDAO {
         refId: currentId,
         __v: patient.__v,
       })
-      await newPatientVersion.save()
+      await newPatientVersion.save({ session: this.session })
       return newPatientVersion
     } catch (error) {
       return this.handleError(error as Error)

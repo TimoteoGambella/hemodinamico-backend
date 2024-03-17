@@ -1,11 +1,16 @@
 import StretcherModel, { StretcherDocument } from '../model/Stretcher.model'
 import StretcherVersionDAO from './StretcherVersion.dao'
 import Logger from '../../routes/util/Logger'
+import { ClientSession } from 'mongoose'
+import PatientDAO from './Patient.dao'
 
 export default class StretcherDAO {
   private logger = new Logger()
+  private session: ClientSession | undefined
 
-  constructor() {}
+  constructor(session?: ClientSession) {
+    this.session = session
+  }
 
   private handleError(error: Error) {
     this.logger.log(error.stack || error.toString())
@@ -14,10 +19,21 @@ export default class StretcherDAO {
 
   async getAll(populate?: boolean) {
     try {
-      const stretcher = await StretcherModel.find({
+      const stretchers = await StretcherModel.find({
         isDeleted: false,
-      }).populate(populate ? 'patientId' : '')
-      return stretcher
+      })
+      if (populate) {
+        return await Promise.all(
+          stretchers.map(async (stretcher) => {
+            const patient = await new PatientDAO().getById(
+              stretcher.patientId as string
+            )
+            // Reemplaza el patientId con el paciente completo
+            return { ...stretcher.toObject(), patientId: patient }
+          })
+        )
+      }
+      return stretchers
     } catch (error) {
       return this.handleError(error as Error)
     }
@@ -25,9 +41,11 @@ export default class StretcherDAO {
 
   async getById(id: string, populate?: boolean) {
     try {
-      const stretcher = await StretcherModel.findOne({ _id: id }).populate(
-        populate ? 'patientId' : ''
-      )
+      const stretcher = await StretcherModel.findOne(
+        { _id: id },
+        null,
+        { session: this.session }
+      ).populate(populate ? 'patientId' : '')
       return stretcher
     } catch (error) {
       return this.handleError(error as Error)
@@ -47,7 +65,7 @@ export default class StretcherDAO {
     try {
       stretcher.editedBy = createdBy
       const newStretcher = new StretcherModel(stretcher)
-      await newStretcher.save()
+      await newStretcher.save({ session: this.session })
       return newStretcher
     } catch (error) {
       return this.handleError(error as Error)
@@ -58,7 +76,7 @@ export default class StretcherDAO {
     try {
       const current = await this.getById(id, false)
       if (!current) throw new Error('Cama no encontrada.')
-      const savedStretcher = await new StretcherVersionDAO().create(
+      const savedStretcher = await new StretcherVersionDAO(this.session).create(
         current.toJSON() as StretcherDocument
       )
       if (!savedStretcher)
@@ -79,16 +97,41 @@ export default class StretcherDAO {
 
   async delete(_id: string, deletedBy: string) {
     try {
+      /**
+       * OBTINE LA INFORMACION DE LA CAMA QUE SE VA A ELIMINAR
+       */
+      const stretcher = await this.getById(_id, false)
+      if (!stretcher) throw new Error('Cama no encontrada.')
+      /**
+       * OBTIENE LA INFORMACION DEL PACIENTE QUE ESTA OCUPANDO LA CAMA
+       */
+      const patient = await new PatientDAO().getById(
+        stretcher.patientId as string
+      )
+      /**
+       * ACTUALIZA LA CAMA ESTABLECIENDO EL CAMPO isDeleted EN TRUE
+       * Y ACTUALIZANDO LOS CAMPOS deletedAt, deletedBy Y patientId
+       * patientId DEBE SER EL DOCUMENTO ACTUAL DEL PACIENTE QUE ESTA
+       * OCUPANDO LA CAMA
+       */
       const deletedStretcher = await StretcherModel.findByIdAndUpdate(
         { _id },
         {
           isDeleted: true,
+          patientId: patient,
           deletedAt: Date.now(),
           deletedBy: deletedBy,
+        },
+        {
+          session: this.session,
         }
       )
       if (!deletedStretcher) throw new Error('Error al eliminar la cama.')
-      const newStretcher = this.create(
+      /**
+       * CREA UNA CAMA NUEVA CON EL MISMO LABEL Y AID QUE LA CAMA
+       * QUE SE ACABA DE ELIMINAR
+       */
+      const newStretcher = await this.create(
         {
           label: deletedStretcher.label,
           aid: deletedStretcher.aid,

@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express'
 import StretcherDAO from '../../../db/dao/Stretcher.dao'
 import { ReqSession } from '../../../../module-types'
 import PatientDAO from '../../../db/dao/Patient.dao'
+import { startSession } from 'mongoose'
 
 export default {
   getAll: async (_req: Request, res: Response, next: NextFunction) => {
@@ -42,7 +43,8 @@ export default {
         id,
         populate === 'true'
       )
-      if (!stretcher) throw new Error('Error al obtener las versiones de la camilla.')
+      if (!stretcher)
+        throw new Error('Error al obtener las versiones de la camilla.')
       res.status(200).json({
         message: 'Get all versions of stretcher',
         data: stretcher,
@@ -56,27 +58,11 @@ export default {
     try {
       const shouldPopulate = populate === 'true'
       const stretcher = await new StretcherVersionDAO().getAll(shouldPopulate)
-      if (!stretcher) throw new Error('Error al obtener las versiones de las camillas.')
+      if (!stretcher)
+        throw new Error('Error al obtener las versiones de las camillas.')
       res.status(200).json({
         message: 'Get all versions of stretcher',
         data: stretcher,
-      })
-    } catch (error) {
-      next(error)
-    }
-  },
-  register: async (request: Request, res: Response, next: NextFunction) => {
-    const req = request as ReqSession
-    const stretcher: Stretcher = req.body
-    try {
-      const createdStretcher = await new StretcherDAO().create(
-        stretcher,
-        req.session.user!._id
-      )
-      if (!createdStretcher) throw new Error('Error al crear la camilla.')
-      res.status(201).json({
-        message: 'Camilla creada exitosamente.',
-        data: createdStretcher,
       })
     } catch (error) {
       next(error)
@@ -109,6 +95,8 @@ export default {
   delete: async (request: Request, res: Response, next: NextFunction) => {
     const req = request as ReqSession
     const { id } = req.params
+    const session = await startSession()
+    session.startTransaction()
     try {
       const exist = await new StretcherDAO().getById(id, false)
       if (!exist) {
@@ -116,23 +104,21 @@ export default {
         return
       } else if (exist.__v === 0) {
         res.status(400).json({
-          message:
-            'No se puede eliminar una camilla que no ha sido modificada.',
+          message: 'No se puede eliminar una cama que no ha sido modificada.',
         })
         return
       }
       const patient = await new PatientDAO().update(
-        exist.patientId as string,
+        String(exist.patientId),
         { stretcherId: null } as Patient,
         req.session.user!._id
       )
       if (!patient) {
-        res
-          .status(500)
-          .json({
-            message:
-              'Error al actualizar la información del paciente asociado a la cama.',
-          })
+        session.abortTransaction()
+        res.status(500).json({
+          message:
+            'Error al actualizar la información del paciente asociado a la cama.',
+        })
         return
       }
       const deletedStretcher = await new StretcherDAO().delete(
@@ -140,12 +126,16 @@ export default {
         req.session.user!._id
       )
       if (!deletedStretcher) throw new Error('Error al eliminar la camilla.')
+      await session.commitTransaction()
       res.status(200).json({
         message: 'Cama eliminada exitosamente.',
         data: deletedStretcher,
       })
     } catch (error) {
+      await session.abortTransaction()
       next(error)
+    } finally {
+      session.endSession()
     }
   },
 }

@@ -3,9 +3,8 @@ import { ObjectId } from 'mongodb'
 export default {
   label: { type: String, required: false },
   patientId: {
-    type: ObjectId,
+    type: Object,
     required: false,
-    ref: 'patients',
     default: null,
   },
   patientHeartRate: { type: Number, required: false, default: null },

@@ -3,45 +3,8 @@ import { Request, Response, NextFunction } from 'express'
 import StretcherDAO from '../../../db/dao/Stretcher.dao'
 import { ReqSession } from '../../../../module-types'
 import PatientDAO from '../../../db/dao/Patient.dao'
-import { ObjectId } from 'mongoose'
-
-async function handlerStretcher(patient: Patient, createdBy: string) {
-  if (patient.stretcherId === 'auto') {
-    let stretcher = await new StretcherDAO().getOneFreeStretcher()
-    if (!stretcher) {
-      stretcher = await new StretcherDAO().create({} as Stretcher, createdBy)
-      if (!stretcher) throw new Error('Error al crear camilla.')
-    }
-    patient.stretcherId = stretcher._id
-  } else return
-}
-
-async function handlerUpdateStretcher(
-  createdPatient: Patient,
-  editedBy: string,
-  oldPatient?: Patient
-) {
-  if (createdPatient.stretcherId) {
-    const updatedStretcher = await new StretcherDAO().update(
-      String(createdPatient.stretcherId),
-      {
-        patientId: createdPatient._id,
-      } as Stretcher,
-      editedBy
-    )
-    if (!updatedStretcher) throw new Error('Error al actualizar camilla.')
-  }
-  if (oldPatient && oldPatient.stretcherId) {
-    const updatedStretcher = await new StretcherDAO().update(
-      String(oldPatient.stretcherId),
-      {
-        patientId: null,
-      } as Stretcher,
-      editedBy
-    )
-    if (!updatedStretcher) throw new Error('Error al actualizar camilla.')
-  }
-}
+import { ObjectId, startSession } from 'mongoose'
+import { ObjectId as ObjId } from 'mongodb'
 
 export default {
   getAll: async (_req: Request, res: Response, next: NextFunction) => {
@@ -56,6 +19,8 @@ export default {
   register: async (request: Request, res: Response, next: NextFunction) => {
     const req = request as ReqSession
     const patient: Patient = req.body
+    const session = await startSession()
+    session.startTransaction()
     try {
       const existPatient = await new PatientDAO().getByDNI(patient.dni)
       if (existPatient) {
@@ -65,71 +30,353 @@ export default {
         return
       }
 
-      await handlerStretcher(patient, req.session.user!._id)
-
+      /* CREAMOS UN NUEVO ID */
+      const newObjId = new ObjId()
+      /* CONSERVAMOS EL ID DE LA CAMA DEL BODY */
+      const tmp = patient.stretcherId
+      /* ASIGNAMOS EL ID NUEVO SOLO PARA VALIDAR EL BODY */
+      patient.stretcherId = tmp === 'auto' ? newObjId : tmp
+      /* VALIDAMOS EL BODY */
       const error = new PatientModel(patient).validateSync()
       if (error) {
         res.status(400).json({ message: error.message })
         return
       }
+      /* ASIGNAMOS EL ID ORIGINAL DEL BODY */
+      patient.stretcherId = tmp
 
-      const createdPatient = await new PatientDAO().create(
-        patient,
-        req.session.user?._id as unknown as ObjectId
-      )
-      if (!createdPatient) throw new Error('Error al crear paciente.')
+      if (patient.stretcherId === 'auto') {
+        /* COMPROBAR CAMAS LIBRES */
+        let stretcher = await new StretcherDAO(session).getOneFreeStretcher()
+        if (stretcher) {
+          /* CREAR PACIENTE PASANDOLE LA CAMA LIBRE */
+          const createdPatient = await new PatientDAO(session).create(
+            { ...patient, stretcherId: stretcher._id },
+            req.session.user?._id as unknown as ObjectId
+          )
+          if (!createdPatient) throw new Error('Error al crear paciente.')
+          /* ACTUALIZAR CAMA LIBRE */
+          const updatedStretcher = await new StretcherDAO(session).update(
+            String(stretcher._id),
+            {
+              patientId: createdPatient._id,
+            } as Stretcher,
+            req.session.user!._id
+          )
+          if (!updatedStretcher) throw new Error('Error al actualizar cama.')
+          /* COMMIT */
+          await session.commitTransaction()
+          res.status(201).json({
+            message: 'Paciente creado exitosamente.',
+            data: createdPatient,
+          })
+          return
+        } else {
+          /* CREAR PACIENTE CON ID DE CAMA NO EXISTENTE */
+          const createdPatient = await new PatientDAO(session).create(
+            { ...patient, stretcherId: newObjId },
+            req.session.user?._id as unknown as ObjectId
+          )
+          if (!createdPatient) throw new Error('Error al crear paciente.')
+          /* CREAR CAMA CON ID NO EXISTENTE */
+          stretcher = await new StretcherDAO(session).create(
+            {
+              _id: newObjId,
+              patientId: createdPatient,
+            } as unknown as Stretcher,
+            req.session.user!._id
+          )
+          if (!stretcher) throw new Error('Error al crear camilla.')
+          /* COMMIT */
+          await session.commitTransaction()
+          res.status(201).json({
+            message: 'Paciente creado exitosamente.',
+            data: createdPatient,
+          })
+          return
+        }
+      }
 
-      await handlerUpdateStretcher(createdPatient, req.session.user!._id)
-
-      res.status(201).json({
-        message: 'Paciente creado exitosamente.',
-        data: createdPatient,
-      })
+      if (ObjId.isValid(patient.stretcherId as string)) {
+        /* COMPROBAR EXISTENCIA */
+        const stretcherExist = await new StretcherDAO().getById(
+          patient.stretcherId as string
+        )
+        if (!stretcherExist) {
+          res.status(404).json({ message: 'Cama no encontrada.' })
+          return
+        }
+        /* CREAR PACIENTE */
+        const createdPatient = await new PatientDAO(session).create(
+          { ...patient, stretcherId: stretcherExist._id },
+          req.session.user?._id as unknown as ObjectId
+        )
+        if (!createdPatient) throw new Error('Error al crear paciente.')
+        /* ACTUALIZAR CAMA */
+        const updatedStretcher = await new StretcherDAO(session).update(
+          String(stretcherExist._id),
+          {
+            patientId: createdPatient._id,
+          } as Stretcher,
+          req.session.user!._id
+        )
+        if (!updatedStretcher) throw new Error('Error al actualizar cama.')
+        /* COMMIT */
+        await session.commitTransaction()
+        res.status(201).json({
+          message: 'Paciente creado exitosamente.',
+          data: createdPatient,
+        })
+      } else {
+        res.status(400).json({ message: 'Id de camilla inválido.' })
+        return
+      }
     } catch (error) {
+      await session.abortTransaction()
       next(error)
+    } finally {
+      session.endSession()
     }
   },
   update: async (request: Request, res: Response, next: NextFunction) => {
     const req = request as ReqSession
     const { id } = req.params
-    const tmPatient = req.body as Patient
+    const tmPatient = req.body as Patient & {
+      stretcherId: 'auto' | null | string
+    }
+    const session = await startSession()
+    session.startTransaction()
     try {
+      // POR ALGUNA RAZON SI NO SE HACE ESTO, NO SE PUEDE HACER EL COMMIT MAS ADELANTE
+      // await session.commitTransaction()
+
       if (!tmPatient || Object.keys(tmPatient).length === 0) {
         res.status(400).json({
           message: 'No se ha proporcionado la información del paciente.',
         })
         return
+      } else if (!tmPatient.stretcherId && tmPatient.stretcherId !== null) {
+        res.status(400).json({ message: 'Id de cama no proporcionado.' })
+        return
       }
-      const exists = await new PatientDAO().getById(id as unknown as ObjectId)
-      if (!exists) {
+
+      const existPatient = await new PatientDAO().getById(id)
+      if (!existPatient) {
         res.status(404).json({ message: 'Paciente no encontrado.' })
         return
       }
-      await handlerStretcher(tmPatient, req.session.user!._id)
-      const patient = { ...exists, ...tmPatient }
-      const error = new PatientModel(patient).validateSync()
-      if (error) {
-        res.status(400).json({ message: error.message })
+
+      const handleUpdate = async (patient: Patient) => {
+        /* VALIDACION DE ESQUEMA */
+        const error = new PatientModel(patient).validateSync()
+        if (error) throw new Error(error.message)
+        /* ACTUALIZAR PACIENTE */
+        const updatedPatient = await new PatientDAO().update(
+          id,
+          patient,
+          req.session.user?._id as unknown as ObjectId
+        )
+        if (!updatedPatient) throw new Error('Error al actualizar paciente.')
+        return updatedPatient
+      }
+
+      if (
+        (existPatient.stretcherId as string)?.toString() !==
+        tmPatient.stretcherId
+      ) {
+        /**
+         * FALTA MANEJAR SI ES NULL O 'AUTO'
+         */
+        if (tmPatient.stretcherId === 'auto') {
+          if (existPatient.stretcherId) {
+            /* JUNTAMOS LOS OBJETOS */
+            const patient = { ...existPatient, ...tmPatient }
+            /**
+             * COMO EL PACIENTE ACTUAL YA TIENE UNA CAMA ASIGNADA
+             * Y SE QUIERE CAMBIAR A 'AUTO', SE DEBE SOLO ESE CAMBIO
+             * POR LO QUE DESPUES DE JUNTAR LOS OBJETOS, SE DEBE
+             * REASIGNAR EL ID DE LA CAMA
+             */
+            patient.stretcherId = existPatient.stretcherId as string
+            /* ACTUALIZAMOS CON LOS NUEVOS DATOS DEL PACIENTE */
+            const updatedPatient = await handleUpdate(patient)
+            if (!updatedPatient) {
+              await session.abortTransaction()
+              res.status(500).json({ message: 'Error al actualizar paciente.' })
+              return
+            }
+            /* COMMIT */
+            await session.commitTransaction()
+            res.status(200).json({
+              message: 'Paciente actualizado exitosamente.',
+              data: updatedPatient,
+            })
+            return
+          } else {
+            const freeStretcher = await new StretcherDAO(
+              session
+            ).getOneFreeStretcher()
+            if (freeStretcher) {
+              const patient = { ...existPatient, ...tmPatient }
+              patient.stretcherId = freeStretcher._id
+
+              const updatedPatient = await handleUpdate(patient)
+              if (!updatedPatient) {
+                await session.abortTransaction()
+                res
+                  .status(500)
+                  .json({ message: 'Error al actualizar paciente.' })
+                return
+              }
+
+              const updatedStretcher = await new StretcherDAO(session).update(
+                String(freeStretcher._id),
+                {
+                  patientId: updatedPatient._id,
+                } as Stretcher,
+                req.session.user!._id
+              )
+              if (!updatedStretcher) {
+                await session.abortTransaction()
+                res.status(500).json({ message: 'Error al actualizar cama.' })
+                return
+              }
+
+              await session.commitTransaction()
+              res.status(200).json({
+                message: 'Paciente actualizado exitosamente.',
+                data: updatedPatient,
+              })
+              return
+            } else {
+              const newId = new ObjId()
+              const patient = { ...existPatient, ...tmPatient }
+              patient.stretcherId = newId.toString()
+
+              const updatedPatient = await handleUpdate(patient)
+              if (!updatedPatient) {
+                await session.abortTransaction()
+                res
+                  .status(500)
+                  .json({ message: 'Error al actualizar paciente.' })
+                return
+              }
+
+              const stretcher = await new StretcherDAO(session).create(
+                {
+                  _id: newId,
+                  patientId: existPatient._id,
+                } as unknown as Stretcher,
+                req.session.user!._id
+              )
+              if (!stretcher) {
+                await session.abortTransaction()
+                res.status(500).json({ message: 'Error al crear camilla.' })
+                return
+              }
+
+              await session.commitTransaction()
+              res.status(200).json({
+                message: 'Paciente actualizado exitosamente.',
+                data: updatedPatient,
+              })
+              return
+            }
+          }
+        } else if (tmPatient.stretcherId === null) {
+          const patient = { ...existPatient, ...tmPatient }
+          const updatedPatient = await handleUpdate(patient)
+          if (!updatedPatient) {
+            await session.abortTransaction()
+            res.status(500).json({ message: 'Error al actualizar paciente.' })
+            return
+          }
+
+          const deletedStretcher = await new StretcherDAO(session).delete(
+            String(existPatient.stretcherId),
+            req.session.user!._id
+          )
+          if (!deletedStretcher) {
+            await session.abortTransaction()
+            res.status(500).json({ message: 'Error al eliminar la camilla.' })
+            return
+          }
+
+          await session.commitTransaction()
+          res.status(200).json({
+            message: 'Paciente actualizado exitosamente.',
+            data: updatedPatient,
+          })
+          return
+        } else {
+          if (!ObjId.isValid(tmPatient.stretcherId as string)) {
+            res.status(400).json({ message: 'Id de cama inválido.' })
+            return
+          }
+          const stretcher = await new StretcherDAO().getById(
+            tmPatient.stretcherId as string
+          )
+
+          if (!stretcher) {
+            res.status(404).json({ message: 'Cama no encontrada.' })
+            return
+          } else if (stretcher.patientId) {
+            res.status(409).json({ message: 'Cama ocupada.' })
+            return
+          }
+
+          const patient = { ...existPatient, ...tmPatient }
+          const updatedPatient = await handleUpdate(patient)
+
+          if (!updatedPatient) {
+            await session.abortTransaction()
+            res.status(500).json({ message: 'Error al actualizar paciente.' })
+            return
+          }
+
+          /**
+           * NO PUEDE EXISTIR UNA CAMA SIN UN PACIENTE ASIGNADO
+           * POR LO QUE SE ELIMINA LA CAMA
+           */
+          const deletedStretcher = await new StretcherDAO(session).delete(
+            String(updatedPatient.stretcherId),
+            req.session.user!._id
+          )
+          if (!deletedStretcher) {
+            await session.abortTransaction()
+            res.status(500).json({ message: 'Error al eliminar la camilla.' })
+            return
+          }
+
+          await session.commitTransaction()
+          res.status(200).json({
+            message: 'Paciente actualizado exitosamente.',
+            data: updatedPatient,
+          })
+          return
+        }
+      } else {
+        const patient = { ...existPatient, ...tmPatient }
+        /* ACTUALIZAMOS CON LOS NUEVOS DATOS DEL PACIENTE */
+        const updatedPatient = await handleUpdate(patient)
+        if (!updatedPatient) {
+          await session.abortTransaction()
+          res.status(500).json({ message: 'Error al actualizar paciente.' })
+          return
+        }
+        /* COMMIT */
+        await session.commitTransaction()
+        res.status(200).json({
+          message: 'Paciente actualizado exitosamente.',
+          data: updatedPatient,
+        })
         return
       }
-      const updatedPatient = await new PatientDAO().update(
-        id,
-        patient,
-        req.session.user?._id as unknown as ObjectId
-      )
-      if (!updatedPatient) throw new Error('Error al actualizar paciente.')
-      if (tmPatient.stretcherId !== String(exists.stretcherId))
-        await handlerUpdateStretcher(
-          updatedPatient,
-          req.session.user!._id,
-          exists
-        )
-      res.status(200).json({
-        message: 'Paciente actualizado exitosamente.',
-        data: updatedPatient,
-      })
     } catch (error) {
+      await session.abortTransaction()
       next(error)
+    } finally {
+      session.endSession()
     }
   },
   delete: async (request: Request, res: Response, next: NextFunction) => {

@@ -9,6 +9,12 @@ const stretcherSchema = new mongoose.Schema<StretcherDocument>(
   {
     ...StretcherSchema,
     editedBy: { type: ObjectId, required: true, ref: 'users', inmutable: true },
+    patientId: {
+      type: Object,
+      required: function() { this.patientId === undefined },
+      inmutable: true,
+      default: null,
+    },
     refId: {
       type: ObjectId,
       ref: 'stretchers',

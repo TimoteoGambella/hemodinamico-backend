@@ -2,11 +2,16 @@ import StretcherVersionModel from '../model/versions/StretcherVersion.model'
 import { StretcherDocument } from '../model/Stretcher.model'
 import Logger from '../../routes/util/Logger'
 import StretcherDAO from './Stretcher.dao'
+import { ClientSession } from 'mongoose'
+import PatientDAO from './Patient.dao'
 
 export default class StretcherVersionDAO {
   private logger = new Logger()
+  private session: ClientSession | undefined
 
-  constructor() {}
+  constructor(session?: ClientSession) {
+    this.session = session
+  }
 
   private handleError(error: Error) {
     this.logger.log(error.stack || error.toString())
@@ -49,12 +54,16 @@ export default class StretcherVersionDAO {
     try {
       const currentId = stretcher._id
       delete stretcher._id
+
+      const patient = await new PatientDAO(this.session).getById(stretcher.patientId as string)
+
       const newStretcher = new StretcherVersionModel({
         ...stretcher,
         refId: currentId,
+        patientId: patient,
         __v: stretcher.__v,
       })
-      await newStretcher.save()
+      await newStretcher.save({ session: this.session })
       return newStretcher
     } catch (error) {
       return this.handleError(error as Error)

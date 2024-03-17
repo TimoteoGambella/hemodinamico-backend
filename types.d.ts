@@ -96,7 +96,7 @@ interface StretcherDiagnostic {
 interface Stretcher {
   [x: string]: unknown
   label: string
-  patientId: unknown
+  patientId: string | Patient | null
   aid: ('ecmo' | 'balon')[] | null
   patientHeartRate: number | null
   muestra: GasometricSamples
