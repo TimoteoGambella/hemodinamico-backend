@@ -97,6 +97,22 @@ export default {
         }
       }
 
+      if (patient.stretcherId === null) {
+        /* CREAR PACIENTE SIN CAMA */
+        const createdPatient = await new PatientDAO(session).create(
+          patient,
+          req.session.user?._id as unknown as ObjectId
+        )
+        if (!createdPatient) throw new Error('Error al crear paciente.')
+        /* COMMIT */
+        await session.commitTransaction()
+        res.status(201).json({
+          message: 'Paciente creado exitosamente.',
+          data: createdPatient,
+        })
+        return
+      }
+
       if (ObjId.isValid(patient.stretcherId as string)) {
         /* COMPROBAR EXISTENCIA */
         const stretcherExist = await new StretcherDAO().getById(
