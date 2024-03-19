@@ -17,11 +17,10 @@ export default class StretcherDAO {
     return null
   }
 
-  async getAll(populate?: boolean) {
+  async getAll(populate?: boolean, includeDeleted?: boolean) {
     try {
-      const stretchers = await StretcherModel.find({
-        isDeleted: false,
-      })
+      const filter = includeDeleted ? {} : { isDeleted: false }
+      const stretchers = await StretcherModel.find(filter)
       if (populate) {
         return await Promise.all(
           stretchers.map(async (stretcher) => {

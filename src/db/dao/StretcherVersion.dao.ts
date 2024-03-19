@@ -42,8 +42,10 @@ export default class StretcherVersionDAO {
       }).populate(this.populateOptions(populate ?? false))
       const curStretcher = await new StretcherDAO().getById(_id, populate)
       if (!curStretcher) throw new Error('Error al obtener la cama.')
-      if (populate && !curStretcher.isDeleted) {
-        const patient = await new PatientDAO().getById(curStretcher.patientId as string)
+      if (populate && !curStretcher.isDeleted && curStretcher.patientId) {
+        const patient = await new PatientDAO().getById(
+          curStretcher.patientId as string
+        )
         if (!patient) throw new Error('Error al obtener el paciente.')
         curStretcher.patientId = patient
       }
@@ -60,7 +62,9 @@ export default class StretcherVersionDAO {
       const currentId = stretcher._id
       delete stretcher._id
 
-      const patient = await new PatientDAO(this.session).getById(stretcher.patientId as string)
+      const patient = await new PatientDAO(this.session).getById(
+        stretcher.patientId as string
+      )
 
       const newStretcher = new StretcherVersionModel({
         ...stretcher,

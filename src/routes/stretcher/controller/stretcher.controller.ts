@@ -6,10 +6,15 @@ import PatientDAO from '../../../db/dao/Patient.dao'
 import { startSession } from 'mongoose'
 
 export default {
-  getAll: async (_req: Request, res: Response, next: NextFunction) => {
-    const { populate } = _req.query
+  getAll: async (req: Request, res: Response, next: NextFunction) => {
+    const { populate, includeDeleted } = req.query
     try {
-      const stretcher = await new StretcherDAO().getAll(populate === 'true')
+      const shouldPopulate = populate === 'true'
+      const shouldIncludeDeleted = includeDeleted === 'true'
+      const stretcher = await new StretcherDAO().getAll(
+        shouldPopulate,
+        shouldIncludeDeleted
+      )
       if (!stretcher) throw new Error('Error al obtener las camillas.')
       res.status(200).json({ message: 'Get all stretcher', data: stretcher })
     } catch (error) {
