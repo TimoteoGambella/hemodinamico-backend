@@ -187,7 +187,7 @@ export default {
         const error = new PatientModel(patient).validateSync()
         if (error) throw new Error(error.message)
         /* ACTUALIZAR PACIENTE */
-        const updatedPatient = await new PatientDAO().update(
+        const updatedPatient = await new PatientDAO(session).update(
           id,
           patient,
           req.session.user?._id as unknown as ObjectId
@@ -333,7 +333,7 @@ export default {
             tmPatient.stretcherId as string
           )
 
-          if (!stretcher) {
+          if (!stretcher || stretcher.isDeleted) {
             res.status(404).json({ message: 'Cama no encontrada.' })
             return
           } else if (stretcher.patientId) {
@@ -350,18 +350,33 @@ export default {
             return
           }
 
+          const updatedStretcher = await new StretcherDAO(session).update(
+            String(stretcher._id),
+            {
+              patientId: updatedPatient._id,
+            } as Stretcher,
+            req.session.user!._id
+          )
+          if (!updatedStretcher) {
+            await session.abortTransaction()
+            res.status(500).json({ message: 'Error al actualizar cama.' })
+            return
+          }
+
           /**
            * NO PUEDE EXISTIR UNA CAMA SIN UN PACIENTE ASIGNADO
            * POR LO QUE SE ELIMINA LA CAMA
            */
-          const deletedStretcher = await new StretcherDAO(session).delete(
-            String(updatedPatient.stretcherId),
-            req.session.user!._id
-          )
-          if (!deletedStretcher) {
-            await session.abortTransaction()
-            res.status(500).json({ message: 'Error al eliminar la camilla.' })
-            return
+          if (existPatient.stretcherId) {
+            const deletedStretcher = await new StretcherDAO(session).delete(
+              String(existPatient.stretcherId),
+              req.session.user!._id
+            )
+            if (!deletedStretcher) {
+              await session.abortTransaction()
+              res.status(500).json({ message: 'Error al eliminar la camilla.' })
+              return
+            }
           }
 
           await session.commitTransaction()
