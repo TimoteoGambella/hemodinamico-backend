@@ -1,12 +1,15 @@
 import LaboratoryModel, { LaboratoryDocument } from '../model/Laboratory.model'
+import { ClientSession, ObjectId } from 'mongoose'
 import LabVersionDAO from './LabVersion.dao'
 import Logger from '../../routes/util/Logger'
-import { ObjectId } from 'mongoose'
 
 export default class LaboratoryDAO {
   private logger = new Logger()
+  private session: ClientSession | undefined
 
-  constructor() {}
+  constructor(session?: ClientSession) {
+    this.session = session
+  }
 
   private handleError(error: Error) {
     this.logger.log(error.stack || error.toString())
@@ -57,7 +60,7 @@ export default class LaboratoryDAO {
 
   async update(_id: string, currentLab: LaboratoryDocument, newLab: Laboratory, userId: ObjectId, patient: Patient) {
     try {
-      const labVersionDAO = await new LabVersionDAO().create(currentLab)
+      const labVersionDAO = await new LabVersionDAO(this.session).create(currentLab)
       if (!labVersionDAO) return null
       const updatedFields = this.mergeNestedValues(currentLab, newLab)
       updatedFields.patientId = patient
@@ -66,7 +69,7 @@ export default class LaboratoryDAO {
       const updatedLab = await LaboratoryModel.findByIdAndUpdate(
         { _id },
         { $set: updatedFields, $inc: { __v: 1 } },
-        { new: true }
+        { new: true, session: this.session }
       )
       return updatedLab
     } catch (error) {

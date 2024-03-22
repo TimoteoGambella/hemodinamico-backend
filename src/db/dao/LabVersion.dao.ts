@@ -1,12 +1,15 @@
 import LabVersionModel from '../model/versions/LabVersion.model'
 import { LaboratoryDocument } from '../model/Laboratory.model'
+import { ClientSession, ObjectId } from 'mongoose'
 import Logger from '../../routes/util/Logger'
-import { ObjectId } from 'mongoose'
 
 export default class LabVersionDAO {
   private logger = new Logger()
+  private session: ClientSession | undefined
 
-  constructor() {}
+  constructor(session?: ClientSession) {
+    this.session = session
+  }
 
   private handleError(error: Error) {
     this.logger.log(error.stack || error.toString())
@@ -70,7 +73,7 @@ export default class LabVersionDAO {
         refId: currentId,
         __v: lab.__v,
       })
-      await newLabVersion.save()
+      await newLabVersion.save({ session: this.session })
       return newLabVersion
     } catch (error) {
       return this.handleError(error as Error)

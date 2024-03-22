@@ -123,6 +123,8 @@ export default {
   update: async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params
     const laboratory = req.body
+    const session = await startSession()
+    session.startTransaction()
     try {
       laboratory.infective.resultado =
         laboratory?.infective?.resultado === 'true'
@@ -137,13 +139,13 @@ export default {
         res.status(404).json({ message: 'Laboratorio no encontrado.' })
         return
       }
-      const patient = await new PatientDAO().getById(exist.patientId._id as string, false)
+      const patient = await new PatientDAO(session).getById(exist.patientId._id as string, false)
       if (!patient) {
         res.status(404).json({ message: 'Paciente no encontrado.' })
         return
       }
       laboratory.patient = patient
-      const lab = await new LaboratoryDAO().update(
+      const lab = await new LaboratoryDAO(session).update(
         id,
         exist,
         laboratory,
@@ -151,11 +153,15 @@ export default {
         patient
       )
       if (!lab) throw new Error('Laboratory could not be updated.')
+      await session.commitTransaction()
       res
         .status(200)
         .json({ message: 'Laboratory updated successfully.', data: lab })
     } catch (error) {
+      await session.abortTransaction()
       next(error)
+    } finally {
+      session.endSession()
     }
   },
   delete: async (request: Request, res: Response, next: NextFunction) => {
