@@ -198,8 +198,8 @@ export default {
       }
 
       if (
-        (existPatient.stretcherId as string)?.toString() !==
-        tmPatient.stretcherId
+        existPatient.stretcherId !== tmPatient.stretcherId &&
+        existPatient.stretcherId?.toString() !== tmPatient.stretcherId
       ) {
         /**
          * FALTA MANEJAR SI ES NULL O 'AUTO'
