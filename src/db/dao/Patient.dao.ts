@@ -16,21 +16,22 @@ export default class PatientDAO {
     return null
   }
 
-  async getAll() {
+  async getAll(populate = false) {
     try {
-      const patients = await PatientModel.find({ isDeleted: false })
+      const patients = await PatientModel.find({ isDeleted: false }).populate(
+        populate ? 'editedBy' : ''
+      )
       return patients
     } catch (error) {
       return this.handleError(error as Error)
     }
   }
 
-  async getById(
-    _id: ObjectId | string,
-    asObject: boolean = true
-  ) {
+  async getById(_id: ObjectId | string, asObject: boolean = true) {
     try {
-      const patient = await PatientModel.findOne({ _id }, null, { session: this.session })
+      const patient = await PatientModel.findOne({ _id }, null, {
+        session: this.session,
+      })
       if (!patient) return null
       else if (asObject) return patient.toObject() as Patient
       else return patient as PatientDocument
@@ -63,7 +64,9 @@ export default class PatientDAO {
     try {
       const current = (await this.getById(id, true)) as PatientDocument | null
       if (!current) throw new Error('Paciente no encontrado.')
-      const savedPatient = await new PatientVersionDAO(this.session).create(current)
+      const savedPatient = await new PatientVersionDAO(this.session).create(
+        current
+      )
       if (!savedPatient)
         throw new Error('Error al guardar versión del paciente.')
       patient.editedBy = editedBy

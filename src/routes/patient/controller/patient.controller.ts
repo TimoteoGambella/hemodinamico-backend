@@ -7,9 +7,10 @@ import { ObjectId, startSession } from 'mongoose'
 import { ObjectId as ObjId } from 'mongodb'
 
 export default {
-  getAll: async (_req: Request, res: Response, next: NextFunction) => {
+  getAll: async (req: Request, res: Response, next: NextFunction) => {
+    const { populate } = req.query
     try {
-      const patients = await new PatientDAO().getAll()
+      const patients = await new PatientDAO().getAll(populate === 'true')
       if (!patients) throw new Error('Error al obtener pacientes.')
       res.status(200).json({ message: 'Get all patients', data: patients })
     } catch (error) {
