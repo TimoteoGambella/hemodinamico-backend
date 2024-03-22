@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import StretcherModel, { StretcherDocument } from '../model/Stretcher.model'
 import StretcherVersionDAO from './StretcherVersion.dao'
 import Logger from '../../routes/util/Logger'
@@ -20,7 +21,9 @@ export default class StretcherDAO {
   async getAll(populate?: boolean, includeDeleted?: boolean) {
     try {
       const filter = includeDeleted ? {} : { isDeleted: false }
-      const stretchers = await StretcherModel.find(filter)
+      const stretchers = (await StretcherModel.find(filter).populate(
+        populate ? 'editedBy' : ''
+      )) as any[]
       if (populate) {
         return await Promise.all(
           stretchers.map(async (stretcher) => {
@@ -40,11 +43,9 @@ export default class StretcherDAO {
 
   async getById(id: string, populate?: boolean) {
     try {
-      const stretcher = await StretcherModel.findOne(
-        { _id: id },
-        null,
-        { session: this.session }
-      ).populate(populate ? 'patientId' : '')
+      const stretcher = await StretcherModel.findOne({ _id: id }, null, {
+        session: this.session,
+      }).populate(populate ? 'patientId' : '')
       return stretcher
     } catch (error) {
       return this.handleError(error as Error)

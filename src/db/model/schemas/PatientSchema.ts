@@ -27,11 +27,11 @@ export default {
     },
   },
   dni: {
-    type: Number,
+    type: String,
     required: true,
     unique: true,
     validate: {
-      validator: (dni: number) => dni.toString().length === 8,
+      validator: (dni: string) => dni.length === 8,
       message: 'El DNI debe tener 8 dígitos.',
     },
   },

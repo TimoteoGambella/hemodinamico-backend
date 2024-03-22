@@ -14,15 +14,15 @@ export default class LaboratoryDAO {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getAll(_populate = false, includeDeleted = false) {
+  async getAll(populate = false, includeDeleted = false) {
     try {
       let laboratories
       if (!includeDeleted) {
         laboratories = await LaboratoryModel.find({
           isDeleted: false,
-        })
+        }).populate(populate ? 'editedBy' : '')
       } else {
-        laboratories = await LaboratoryModel.find()
+        laboratories = await LaboratoryModel.find().populate(populate ? 'editedBy' : '')
       }
       return laboratories
     } catch (error) {

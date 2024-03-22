@@ -14,7 +14,7 @@ interface User {
 interface Patient {
   [x: string]: unknown
   fullname: string
-  dni: number
+  dni: string
   gender: 'M' | 'F'
   age: number
   weight: number

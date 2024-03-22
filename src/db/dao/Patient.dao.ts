@@ -40,7 +40,7 @@ export default class PatientDAO {
     }
   }
 
-  async getByDNI(dni: number) {
+  async getByDNI(dni: string) {
     try {
       const patient = await PatientModel.findOne({ dni })
       return patient
