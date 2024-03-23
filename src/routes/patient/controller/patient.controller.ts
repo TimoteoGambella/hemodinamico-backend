@@ -46,6 +46,12 @@ export default {
       /* ASIGNAMOS EL ID ORIGINAL DEL BODY */
       patient.stretcherId = tmp
 
+      const patientWithDni = await new PatientDAO().getByDNI(patient.dni)
+      if (patientWithDni) {
+        res.status(409).json({ message: 'DNI ya registrado.' })
+        return
+      }
+
       if (patient.stretcherId === 'auto') {
         /* COMPROBAR CAMAS LIBRES */
         let stretcher = await new StretcherDAO(session).getOneFreeStretcher()
@@ -83,7 +89,7 @@ export default {
           stretcher = await new StretcherDAO(session).create(
             {
               _id: newObjId,
-              patientId: createdPatient,
+              patientId: createdPatient._id,
             } as unknown as Stretcher,
             req.session.user!._id
           )

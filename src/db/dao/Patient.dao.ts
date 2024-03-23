@@ -40,9 +40,9 @@ export default class PatientDAO {
     }
   }
 
-  async getByDNI(dni: string) {
+  async getByDNI(dni: string, isDeleted = false) {
     try {
-      const patient = await PatientModel.findOne({ dni })
+      const patient = await PatientModel.findOne({ dni, isDeleted })
       return patient
     } catch (error) {
       return this.handleError(error as Error)

@@ -29,7 +29,6 @@ export default {
   dni: {
     type: String,
     required: true,
-    unique: true,
     validate: {
       validator: (dni: string) => dni.length === 8,
       message: 'El DNI debe tener 8 dígitos.',
