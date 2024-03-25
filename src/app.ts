@@ -10,7 +10,7 @@ import morganConfig from './config/morgan.config'
 import { AddressInfo } from 'net'
 
 const app = express()
-const PORT = Number(process.env.PORT) || 3000
+const PORT = process.env.PORT || 3000;
 
 initDBConnection()
   .then(() => {
@@ -29,6 +29,7 @@ initDBConnection()
     app.use(handleInternalError)
 
     const server = app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
       const address = server.address() as AddressInfo
       const host = address.address === '::' ? 'localhost' : address.address
       const protocol = process.env.NODE_ENV === 'prod' ? 'https' : 'http'
