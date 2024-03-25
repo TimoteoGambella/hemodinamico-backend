@@ -1,7 +1,7 @@
-import UserModel from '../model/User.model'
-import Logger from '../../routes/util/Logger'
-import { ObjectId } from 'mongoose'
 import { ObjectId as ObjId } from 'mongodb'
+import UserModel from '../model/User.model'
+import Logger from '../../utils/Logger'
+import { ObjectId } from 'mongoose'
 
 export default class UserDAO {
   private logger = new Logger()

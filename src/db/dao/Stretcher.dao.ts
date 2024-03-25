@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import StretcherModel, { StretcherDocument } from '../model/Stretcher.model'
 import StretcherVersionDAO from './StretcherVersion.dao'
-import Logger from '../../routes/util/Logger'
 import { ClientSession } from 'mongoose'
+import Logger from '../../utils/Logger'
 import PatientDAO from './Patient.dao'
 
 export default class StretcherDAO {

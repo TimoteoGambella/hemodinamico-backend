@@ -1,7 +1,7 @@
 import PatientVersionModel from '../model/versions/PatientVersion.model'
 import { PatientDocument } from '../model/Patient.model'
-import Logger from '../../routes/util/Logger'
 import { ClientSession } from 'mongoose'
+import Logger from '../../utils/Logger'
 
 export default class PatientVersionDAO {
   private logger = new Logger()

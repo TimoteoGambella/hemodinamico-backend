@@ -1,7 +1,7 @@
 import LabVersionModel from '../model/versions/LabVersion.model'
 import { LaboratoryDocument } from '../model/Laboratory.model'
 import { ClientSession, ObjectId } from 'mongoose'
-import Logger from '../../routes/util/Logger'
+import Logger from '../../utils/Logger'
 
 export default class LabVersionDAO {
   private logger = new Logger()

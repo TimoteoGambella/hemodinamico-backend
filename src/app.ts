@@ -4,8 +4,8 @@ import express from 'express'
 import Router from './routes'
 import corsConfig, { ALLOWED_ORIGINS } from './config/cors.config'
 import cookieSessionConfig from './config/cookieSession.config'
-import handleInternalError from './routes/util/handleInternalError'
 import { initDBConnection } from './config/dbConnection.config'
+import handleInternalError from './utils/handleInternalError'
 import morganConfig from './config/morgan.config'
 import { AddressInfo } from 'net'
 
@@ -21,6 +21,11 @@ initDBConnection()
     app.use(cookieSessionConfig())
 
     app.use('/api', Router)
+    app.use('*', (_req, res) =>
+      res.status(404).json({
+        message: 'Route not found!',
+      })
+    )
     app.use(handleInternalError)
 
     const server = app.listen(PORT, () => {

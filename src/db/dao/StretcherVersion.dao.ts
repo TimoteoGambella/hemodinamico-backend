@@ -1,8 +1,8 @@
 import StretcherVersionModel from '../model/versions/StretcherVersion.model'
 import { StretcherDocument } from '../model/Stretcher.model'
-import Logger from '../../routes/util/Logger'
 import StretcherDAO from './Stretcher.dao'
 import { ClientSession } from 'mongoose'
+import Logger from '../../utils/Logger'
 import PatientDAO from './Patient.dao'
 
 export default class StretcherVersionDAO {
