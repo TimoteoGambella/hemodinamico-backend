@@ -28,21 +28,6 @@ initDBConnection()
     )
     app.use(handleInternalError)
 
-    app.get('/', (req, res) => {
-      res.send(`<!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="google-site-verification" content="-0hlQWxr_we2SAHKYa-Df3htowXQUG9e4laJxZ9lYsc" />    
-        <title>Título de tu página</title>
-      </head>
-      <body>
-        Contenido de tu página principal aquí
-      </body>
-      </html>`);
-    });
-
     const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       const address = server.address() as AddressInfo
