@@ -28,6 +28,10 @@ initDBConnection()
     )
     app.use(handleInternalError)
 
+    app.get('/', (req, res) => {
+      res.send('Hello World!');
+    });
+    
     const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       const address = server.address() as AddressInfo
