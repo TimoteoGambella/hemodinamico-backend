@@ -42,6 +42,7 @@ export default {
   logout: (req: Request, res: Response, next: NextFunction) => {
     try {
       req.session = null
+      res.clearCookie('session')
       res.json({
         message: 'Cierre de sesión exitoso.',
       })
