@@ -12,22 +12,22 @@ import { AddressInfo } from 'net'
 const app = express()
 const PORT = Number(process.env.PORT) || 3000
 
+app.use(morganConfig())
+app.use(corsConfig())
+app.use(express.json())
+app.set('trust proxy', 1)
+app.use(cookieSessionConfig())
+
+app.use('/api', Router)
+app.use('*', (_req, res) =>
+  res.status(404).json({
+    message: 'Route not found!',
+  })
+)
+app.use(handleInternalError)
+
 initDBConnection()
   .then(() => {
-    app.use(morganConfig())
-    app.use(corsConfig())
-    app.use(express.json())
-    app.set('trust proxy', 1)
-    app.use(cookieSessionConfig())
-
-    app.use('/api', Router)
-    app.use('*', (_req, res) =>
-      res.status(404).json({
-        message: 'Route not found!',
-      })
-    )
-    app.use(handleInternalError)
-
     const server = app.listen(PORT, () => {
       const address = server.address() as AddressInfo
       const host = address.address === '::' ? 'localhost' : address.address
