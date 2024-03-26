@@ -1,17 +1,14 @@
 {
+  "files": ["types.d.ts"],
+  "include": ["src"],
   "compilerOptions": {
-      "module": "commonjs",
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-      "target": "es6",
-      "noImplicitAny": true,
-      "moduleResolution": "node",
-      "sourceMap": true,
-      "outDir": "dist",
-      "baseUrl": ".",
-      "paths": {
-          "*": ["node_modules/*", "src/types/*"]
-      }
-  },
-  "include": ["./src/**/*"]
+    "target": "es2016",
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitReturns": true,
+    "noUnusedParameters": true
+  }
 }
